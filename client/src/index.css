@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Fonts */
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* Custom Black and White Palette */
+  --black: #000000;
+  --off-black: #111111;
+  --dark-gray: #222222;
+  --medium-gray: #555555;
+  --light-gray: #888888;
+  --lighter-gray: #aaaaaa;
+  --dark-white: #b4b4b4;
+  --darker-white: #dadada;
+  --white: #ffffff;
+
+  /* Theme mappings (Subtle Borders, High Legibility) */
+  --bg-app: var(--off-black);         /* Chat Window Background (#111111) */
+  --bg-sidebar: var(--black);         /* Sidebar Background (#000000) */
+  --bg-active: var(--dark-gray);      /* Sidebar Selected Item (#222222) */
+  --bg-card: var(--black);            /* Cards / Modals (#000000) */
+  --bg-bubble-self: var(--white);     /* Self Bubble (#ffffff) */
+  --bg-bubble-other: var(--dark-gray); /* Other Bubble (#222222) */
+  --accent: var(--white);             /* Accent White (#ffffff) */
+  --accent-hover: rgba(255, 255, 255, 0.85); /* Accent Hover White */
+  
+  --text-primary: var(--white);
+  --text-secondary: var(--light-gray);
+  --text-muted: rgba(255, 255, 255, 0.4);
+  --border: rgba(255, 255, 255, 0.15); /* Subtle white borders */
+  --danger: #FF3B30;
+
+  /* Typography Sizes */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+
+  /* Layout & Borders */
+  --border-radius: 8px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  height: 100vh;
+  overflow: hidden;
+  font-size: var(--text-base);
+}
+
+#root {
+  height: 100%;
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: var(--border-radius);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Global Elements styling */
+button, input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  outline: none;
+}
+
+input, textarea, select {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Common Classes */
+.btn-primary {
+  background-color: var(--accent);
+  color: var(--bg-sidebar);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  text-align: center;
+  /* Hover effects: change bg color only, NO x or y movement */
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  background-color: var(--danger);
+  color: #FFFFFF;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  text-align: center;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-danger:hover {
+  opacity: 0.9;
+}
+
+/* Hover effect rule: no translations */
+.hover-item {
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+.hover-item:hover {
+  background-color: var(--bg-active);
+}
+
+/* Glassmorphism/Modern container styles */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-app);
+}
+
+.auth-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--border-radius);
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-md);
+}
+
+/* Typography Helpers */
+.title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
