@@ -1535,6 +1535,7 @@ const Dashboard = ({ dbUser }) => {
         .request-item-actions {
           display: flex;
           gap: 0.4rem;
+          flex-shrink: 0;
         }
 
         .request-action-btn {
@@ -1744,24 +1745,32 @@ const Dashboard = ({ dbUser }) => {
           align-items: center;
           gap: 0.75rem;
           color: var(--black);
+          min-width: 0;
         }
 
         .request-details {
           display: flex;
           flex-direction: column;
           text-align: left;
+          min-width: 0;
         }
 
         .request-username {
           font-weight: 900;
           color: var(--black);
           font-size: var(--text-sm);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .request-bio {
           font-size: var(--text-xs);
           color: var(--gray-dark);
           font-weight: 600;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
 
         .empty-requests-notice {
