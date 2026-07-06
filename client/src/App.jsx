@@ -11,6 +11,9 @@ import axios from 'axios';
 // get clerk publishable
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
+// configure backend url
+axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL || '';
+
 // axios default headers
 const AxiosAuthInterceptor = ({ children }) => {
   const { getToken } = useAuth();

@@ -37,7 +37,8 @@ export const SocketProvider = ({ children }) => {
 
         // establish connection to
         // we pass the
-        const newSocket = io(window.location.origin, {
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || '';
+        const newSocket = io(backendUrl || window.location.origin, {
           auth: { token },
           query: { clerkId: user.id },
           transports: ['websocket', 'polling']
