@@ -200,29 +200,31 @@ const Signup = () => {
       </div>
 
       <style>{`
-        .signup-page-container {
+        .login-page-container, .signup-page-container {
           display: flex;
           flex-direction: row;
           width: 100vw;
           height: 100vh;
-          background-color: var(--bg-app);
+          background-color: #FFFFFF;
           overflow: hidden;
         }
 
-        .signup-left-side {
+        .login-left-side, .signup-left-side {
           width: 50%;
           height: 100%;
           position: relative;
           overflow: hidden;
+          border-right: 6px solid #FFFFFF;
         }
 
-        .signup-bg-image {
+        .login-bg-image, .signup-bg-image {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          filter: grayscale(100%);
         }
 
-        .signup-right-side {
+        .login-right-side, .signup-right-side {
           width: 50%;
           height: 100%;
           display: flex;
@@ -230,28 +232,29 @@ const Signup = () => {
           align-items: center;
           padding: 2rem;
           overflow-y: auto;
-          background-color: black;
+          background-color: #FFFFFF;
         }
 
         @media (max-width: 768px) {
-          .signup-left-side {
+          .login-left-side, .signup-left-side {
             display: none;
           }
-          .signup-right-side {
+          .login-right-side, .signup-right-side {
             width: 100%;
           }
         }
 
-        .signup-card {
+        .login-card, .signup-card {
           width: 100%;
           max-width: 420px;
-          background-color: var(--bg-card);
-          border: 2px solid var(--lighter-gray);
-          border-radius: 25px;
+          background-color: #FFFFFF;
+          border: 4px solid #000000;
+          border-radius: 10px;
           padding: 2.5rem;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
+          box-shadow: 8px 8px 0px #000000;
           animation: fadeIn 0.3s ease-out;
         }
 
@@ -267,39 +270,42 @@ const Signup = () => {
           display: flex;
           justify-content: center;
           align-items: center;
-          background-color: var(--bg-active);
-          border: none;
+          background-color: #000000;
           border-radius: 50%;
           width: 60px;
           height: 60px;
-          color: var(--accent);
+          color: #FFFFFF;
           margin-bottom: 0.25rem;
+          border: 3px solid #000000;
         }
 
         .brand-name {
-          font-size: var(--text-xl);
-          font-weight: 700;
-          color: var(--text-primary);
-          letter-spacing: -0.02em;
+          font-size: 2.25rem;
+          font-weight: 900;
+          color: #000000;
+          letter-spacing: -0.03em;
+          text-transform: uppercase;
         }
 
         .brand-tagline {
           font-size: var(--text-sm);
-          color: var(--text-muted);
+          color: #222222;
           line-height: 1.4;
+          font-weight: 600;
         }
 
         .error-alert {
-          background-color: #7F1D1D;
-          border: 1px solid transparent;
-          border-radius: var(--border-radius);
+          background-color: #000000;
+          border: 3px solid #000000;
+          border-radius: 10px;
           padding: 0.75rem 1rem;
-          color: #FEE2E2;
+          color: #FFFFFF;
           font-size: var(--text-sm);
           display: flex;
           align-items: flex-start;
           gap: 0.5rem;
           line-height: 1.4;
+          box-shadow: 3px 3px 0px #000000;
         }
 
         .error-icon {
@@ -307,7 +313,7 @@ const Signup = () => {
           margin-top: 2px;
         }
 
-        .signup-form {
+        .login-form, .signup-form {
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
@@ -321,17 +327,10 @@ const Signup = () => {
 
         .form-group label {
           font-size: var(--text-xs);
-          font-weight: 600;
-          color: var(--darker-white);
+          font-weight: 900;
+          color: #000000;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-        }
-
-        .verification-instruction {
-          font-size: var(--text-xs);
-          color: var(--text-secondary);
-          line-height: 1.4;
-          margin-bottom: 0.25rem;
         }
 
         .input-icon-wrapper {
@@ -343,25 +342,33 @@ const Signup = () => {
         .input-icon {
           position: absolute;
           left: 14px;
-          color: var(--darker-white);
+          color: #000000;
           pointer-events: none;
           z-index: 2;
+          transition: transform 0.1s ease;
         }
 
         .input-icon-wrapper input {
           padding-left: 42px !important;
-          background-color: var(--bg-card) !important;
-          border: 2px solid var(--border) !important;
-          border-radius: var(--border-radius) !important;
-          color: var(--text-primary) !important;
+          background-color: #FFFFFF !important;
+          border: 3px solid #000000 !important;
+          border-radius: 10px !important;
+          color: #000000 !important;
           font-size: var(--text-sm);
-          height: 46px;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          height: 48px;
+          box-shadow: 3px 3px 0px #000000 !important;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .input-icon-wrapper input:focus {
-          border-color: var(--accent) !important;
-          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25) !important;
+          background-color: #FFFFFF !important;
+          border-color: #000000 !important;
+          transform: translate(-2px, -2px);
+          box-shadow: 5px 5px 0px #000000 !important;
+        }
+
+        .input-icon-wrapper input:focus ~ .input-icon {
+          transform: translate(-2px, -2px);
         }
 
         .submit-btn {
@@ -369,45 +376,56 @@ const Signup = () => {
           justify-content: center;
           align-items: center;
           gap: 0.5rem;
-          background-color: var(--accent);
-          color: var(--bg-sidebar);
-          font-weight: 600;
-          border-radius: var(--border-radius);
-          height: 46px;
+          background-color: #FFFFFF;
+          color: #000000;
+          font-weight: 900;
+          border: 3px solid #000000;
+          border-radius: 10px;
+          height: 48px;
           font-size: var(--text-sm);
           cursor: pointer;
-          transition: background-color 0.2s ease, opacity 0.2s ease;
-          border: none;
-          box-shadow: none;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          box-shadow: 4px 4px 0px #000000;
+          text-transform: uppercase;
         }
 
         .submit-btn:hover:not(:disabled) {
-          background-color: var(--accent-hover);
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px #000000;
+        }
+
+        .submit-btn:active:not(:disabled) {
+          transform: translate(4px, 4px);
+          box-shadow: none;
         }
 
         .submit-btn:disabled {
           opacity: 0.6;
           cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
         }
 
         .back-btn {
           display: flex;
           justify-content: center;
           align-items: center;
-          background-color: transparent;
-          color: var(--text-secondary);
-          border: none;
-          font-weight: 600;
-          border-radius: var(--border-radius);
-          height: 46px;
+          background-color: #FFFFFF;
+          color: #000000;
+          border: 3px solid #000000;
+          font-weight: 900;
+          border-radius: 10px;
+          height: 48px;
           font-size: var(--text-sm);
           cursor: pointer;
-          transition: background-color 0.2s ease;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          box-shadow: 3px 3px 0px #000000;
+          text-transform: uppercase;
         }
 
         .back-btn:hover:not(:disabled) {
-          background-color: var(--bg-active);
-          color: var(--text-primary);
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px #000000;
         }
 
         .back-btn:disabled {
@@ -422,19 +440,18 @@ const Signup = () => {
         .card-footer {
           text-align: center;
           font-size: var(--text-sm);
-          color: var(--darker-white);
-        }
-
-        .login-link {
-          color: var(--accent);
+          color: #000000;
           font-weight: 600;
-          text-decoration: none;
-          transition: color 0.2s ease;
         }
 
-        .login-link:hover {
-          color: var(--accent-hover);
+        .signup-link, .login-link {
+          color: #000000;
+          font-weight: 900;
           text-decoration: underline;
+        }
+
+        .signup-link:hover, .login-link:hover {
+          color: #555555;
         }
 
         @keyframes fadeIn {
@@ -451,6 +468,33 @@ const Signup = () => {
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
+        }
+        
+        .verification-instruction {
+          font-size: var(--text-xs);
+          color: #000000;
+          line-height: 1.4;
+          margin-bottom: 0.25rem;
+          font-weight: 600;
+        }
+
+        /* Selection/Highlighting - Strictly Black and White */
+        ::selection {
+          background-color: #000000 !important;
+          color: #FFFFFF !important;
+        }
+        ::-moz-selection {
+          background-color: #000000 !important;
+          color: #FFFFFF !important;
+        }
+
+        .login-card ::selection, .signup-card ::selection {
+          background-color: #FFFFFF !important;
+          color: #000000 !important;
+        }
+        .login-card ::-moz-selection, .signup-card ::-moz-selection {
+          background-color: #FFFFFF !important;
+          color: #000000 !important;
         }
       `}</style>
     </div>

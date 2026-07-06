@@ -316,7 +316,7 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
           background-color: var(--color);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .back-btn {
             display: block;
           }

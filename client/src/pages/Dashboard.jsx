@@ -533,6 +533,46 @@ const Dashboard = ({ dbUser }) => {
 
         {/* column 2: directory */}
         <div className={`directory-column directory-pane ${viewingChatMobile ? 'mobile-hidden' : ''}`}>
+          {/* mobile tabs navigation */}
+          <div className="directory-mobile-tabs">
+            <button 
+              className={`mobile-tab-btn ${activeTab === 'all' && !isSearching ? 'active' : ''}`}
+              onClick={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+                setIsSearching(false);
+                setActiveTab('all');
+              }}
+            >
+              <MessageSquare size={16} />
+              <span>Chats</span>
+            </button>
+            <button 
+              className={`mobile-tab-btn ${activeTab === 'restricted' && !isSearching ? 'active' : ''}`}
+              onClick={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+                setIsSearching(false);
+                setActiveTab('restricted');
+              }}
+            >
+              <ShieldAlert size={16} />
+              <span>Restricted</span>
+            </button>
+            <button 
+              className={`mobile-tab-btn ${activeTab === 'blocked' && !isSearching ? 'active' : ''}`}
+              onClick={() => {
+                setSearchQuery('');
+                setSearchResults([]);
+                setIsSearching(false);
+                setActiveTab('blocked');
+              }}
+            >
+              <Ban size={16} />
+              <span>Blocked</span>
+            </button>
+          </div>
+
           {/* search bar */}
           <div className="directory-search-wrapper">
             <div className="search-box-brutalist">
@@ -1113,6 +1153,21 @@ const Dashboard = ({ dbUser }) => {
           font-size: 0.875rem;
         }
 
+        @media (max-width: 600px) {
+          .self-username-label {
+            display: none;
+          }
+          .self-profile-card {
+            padding: 0.4rem;
+          }
+          .header-self-profile {
+            gap: 0.5rem;
+          }
+          .dashboard-top-header {
+            padding: 0 0.75rem;
+          }
+        }
+
         .header-controls {
           display: flex;
           gap: 0.5rem;
@@ -1292,6 +1347,46 @@ const Dashboard = ({ dbUser }) => {
           box-shadow: 6px 6px 0px var(--black);
           flex-shrink: 0;
           overflow: hidden;
+        }
+
+        .directory-mobile-tabs {
+          display: none;
+          flex-direction: row;
+          background-color: var(--white);
+          border-bottom: 3px solid var(--black);
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .mobile-tab-btn {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.85rem 0.5rem;
+          background-color: var(--white);
+          border: none;
+          border-right: 3px solid var(--black);
+          color: var(--black);
+          font-weight: 900;
+          font-size: 0.875rem;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background-color 0.1s ease, color 0.1s ease;
+        }
+
+        .mobile-tab-btn:last-child {
+          border-right: none;
+        }
+
+        .mobile-tab-btn:hover {
+          background-color: var(--color);
+        }
+
+        .mobile-tab-btn.active {
+          background-color: var(--black);
+          color: var(--white);
         }
 
         .directory-search-wrapper {
@@ -1694,10 +1789,14 @@ const Dashboard = ({ dbUser }) => {
           font-weight: 600;
         }
 
-        /* Responsive Mobile Layouts */
+         /* Responsive Mobile Layouts */
         @media (max-width: 1024px) {
           .controls-pane {
             display: none !important;
+          }
+
+          .directory-mobile-tabs {
+            display: flex !important;
           }
 
           .dashboard-grid-container {
