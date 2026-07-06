@@ -7,7 +7,7 @@ import { sendToUser, sendToRoom } from '../socket.js';
 
 const router = express.Router();
 
-// Helper to check if a block exists between two users
+// helper to check
 async function isBlocked(userAId, userBId) {
   const userA = await User.findById(userAId);
   const userB = await User.findById(userBId);
@@ -15,7 +15,7 @@ async function isBlocked(userAId, userBId) {
   return userA.blockedUsers.includes(userBId) || userB.blockedUsers.includes(userAId);
 }
 
-// 1. Get all conversations for logged-in user
+// 1. get all
 router.get('/', requireAuth, async (req, res) => {
   try {
     const currentUser = await User.findOne({ clerkId: req.auth.userId });
@@ -23,7 +23,7 @@ router.get('/', requireAuth, async (req, res) => {
 
     const currentUserId = currentUser._id;
 
-    // Find conversations where user is a participant and has not deleted the conversation
+    // find conversations where
     const conversations = await Conversation.find({
       participants: currentUserId,
       deletedBy: { $ne: currentUserId }
@@ -38,15 +38,15 @@ router.get('/', requireAuth, async (req, res) => {
     })
     .sort({ updatedAt: -1 });
 
-    // Format conversations, filtering out last messages that were deleted for this user
+    // format conversations, filtering
     const formattedConversations = await Promise.all(
       conversations.map(async (conv) => {
-        // Find other participant
+        // find other participant
         const otherParticipant = conv.participants.find(
           (p) => p._id.toString() !== currentUserId.toString()
         );
 
-        // If other participant doesn't exist (e.g. account deleted), provide fallback
+        // if other participant
         const contactInfo = otherParticipant
           ? {
               _id: otherParticipant._id,
@@ -67,10 +67,10 @@ router.get('/', requireAuth, async (req, res) => {
               hasBlockedMe: false,
             };
 
-        // Filter last message if deleted for current user
+        // filter last message
         let lastMsg = conv.lastMessage;
         if (lastMsg && lastMsg.deletedFor.includes(currentUserId)) {
-          // Find the actual last message that is not deleted for this user
+          // find the actual
           const replacementMsg = await Message.findOne({
             conversationId: conv._id,
             deletedFor: { $ne: currentUserId }
@@ -103,7 +103,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// 2. Create or open a conversation with another user
+// 2. create or
 router.post('/', requireAuth, async (req, res) => {
   const { recipientId } = req.body;
 
@@ -121,25 +121,25 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Recipient user not found' });
     }
 
-    // Check if blocked
+    // check if blocked
     const blockExists = await isBlocked(currentUserId, recipientId);
     if (blockExists) {
       return res.status(403).json({ error: 'Cannot start conversation. Block relationship exists.' });
     }
 
-    // Check if friends
+    // check if friends
     const isFriend = currentUser.friends.includes(recipientId);
     if (!isFriend) {
       return res.status(403).json({ error: 'You must be friends to start a conversation.' });
     }
 
-    // Find existing conversation between the two participants
+    // find existing conversation
     let conversation = await Conversation.findOne({
       participants: { $all: [currentUserId, recipientId] }
     });
 
     if (conversation) {
-      // If conversation was soft-deleted by current user, restore it
+      // if conversation was
       if (conversation.deletedBy.includes(currentUserId)) {
         conversation.deletedBy = conversation.deletedBy.filter(
           (id) => id.toString() !== currentUserId.toString()
@@ -147,14 +147,14 @@ router.post('/', requireAuth, async (req, res) => {
         await conversation.save();
       }
     } else {
-      // Create new conversation
+      // create new conversation
       conversation = new Conversation({
         participants: [currentUserId, recipientId],
       });
       await conversation.save();
     }
 
-    // Format response
+    // format response
     const populatedConv = await Conversation.findById(conversation._id)
       .populate('participants', '_id username bio profilePhoto blockedUsers restrictedUsers')
       .populate('lastMessage');
@@ -185,7 +185,7 @@ router.post('/', requireAuth, async (req, res) => {
   }
 });
 
-// 3. Delete conversation (Soft Delete for current user)
+// 3. delete conversation
 router.delete('/:id', requireAuth, async (req, res) => {
   const conversationId = req.params.id;
 
@@ -203,13 +203,13 @@ router.delete('/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found or not authorized' });
     }
 
-    // Add current user to deletedBy if not already there
+    // add current user
     if (!conversation.deletedBy.includes(currentUserId)) {
       conversation.deletedBy.push(currentUserId);
       await conversation.save();
     }
 
-    // Soft delete all existing messages in this conversation for this user
+    // soft delete all
     await Message.updateMany(
       { conversationId, deletedFor: { $ne: currentUserId } },
       { $push: { deletedFor: currentUserId } }
@@ -222,7 +222,7 @@ router.delete('/:id', requireAuth, async (req, res) => {
   }
 });
 
-// 4. Get messages in a conversation
+// 4. get messages
 router.get('/:id/messages', requireAuth, async (req, res) => {
   const conversationId = req.params.id;
 
@@ -240,7 +240,7 @@ router.get('/:id/messages', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
 
-    // Retrieve messages that are not soft-deleted for this user
+    // retrieve messages that
     const messages = await Message.find({
       conversationId,
       deletedFor: { $ne: currentUserId }
@@ -255,7 +255,7 @@ router.get('/:id/messages', requireAuth, async (req, res) => {
   }
 });
 
-// 5. Send message
+// 5. send message
 router.post('/:id/messages', requireAuth, async (req, res) => {
   const conversationId = req.params.id;
   const { content } = req.body;
@@ -278,12 +278,12 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
 
-    // Find other participant
+    // find other participant
     const otherParticipantId = conversation.participants.find(
       (p) => p.toString() !== currentUserId.toString()
     );
 
-    // Check if blocked relationship exists
+    // check if blocked
     if (otherParticipantId) {
       const blocked = await isBlocked(currentUserId, otherParticipantId);
       if (blocked) {
@@ -291,7 +291,7 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
       }
     }
 
-    // Create and save message
+    // create and save
     const message = new Message({
       conversationId,
       sender: currentUserId,
@@ -299,9 +299,9 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
     });
     await message.save();
 
-    // Update conversation details
+    // update conversation details
     conversation.lastMessage = message._id;
-    // If the conversation was soft-deleted by the recipient, restore it for them
+    // if the conversation
     if (otherParticipantId && conversation.deletedBy.includes(otherParticipantId)) {
       conversation.deletedBy = conversation.deletedBy.filter(
         (id) => id.toString() !== otherParticipantId.toString()
@@ -309,17 +309,17 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
     }
     await conversation.save();
 
-    // Populate message sender info for response and socket delivery
+    // populate message sender
     const populatedMsg = await Message.findById(message._id)
       .populate('sender', '_id username profilePhoto');
 
-    // Deliver real-time via Socket.io
-    // Emit message to the conversation room
+    // deliver real-time via
+    // emit message to
     sendToRoom(conversationId, 'new_message', populatedMsg);
 
-    // Also send individual socket notification to recipient to update their conversation list if not in room
+    // also send individual
     if (otherParticipantId) {
-      // Check if restricted: if restricted, we can flag the event as muted
+      // check if restricted:
       const recipient = await User.findById(otherParticipantId);
       const isRestricted = recipient?.restrictedUsers.includes(currentUserId) || false;
 
@@ -337,7 +337,7 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
   }
 });
 
-// 6. Edit Message
+// 6. edit message
 router.put('/:id/messages/:messageId', requireAuth, async (req, res) => {
   const { id: conversationId, messageId } = req.params;
   const { content } = req.body;
@@ -371,13 +371,13 @@ router.put('/:id/messages/:messageId', requireAuth, async (req, res) => {
     const populatedMsg = await Message.findById(message._id)
       .populate('sender', '_id username profilePhoto');
 
-    // Emit event via Socket.io
+    // emit event via
     sendToRoom(conversationId, 'message_edited', populatedMsg);
 
-    // Update conversation updates
+    // update conversation updates
     const conversation = await Conversation.findById(conversationId);
     if (conversation && conversation.lastMessage.toString() === messageId) {
-      // Notify about conversation update
+      // notify about conversation
       const otherParticipantId = conversation.participants.find(
         (p) => p.toString() !== currentUserId.toString()
       );
@@ -385,7 +385,7 @@ router.put('/:id/messages/:messageId', requireAuth, async (req, res) => {
         sendToUser(otherParticipantId, 'conversation_update', {
           conversationId,
           message: populatedMsg,
-          isMuted: true // edits are usually quiet
+          isMuted: true // edits are usually
         });
       }
     }
@@ -397,7 +397,7 @@ router.put('/:id/messages/:messageId', requireAuth, async (req, res) => {
   }
 });
 
-// 7. Delete Message
+// 7. delete message
 router.delete('/:id/messages/:messageId', requireAuth, async (req, res) => {
   const { id: conversationId, messageId } = req.params;
   const { type } = req.query; // 'me' or 'everyone'
@@ -417,24 +417,24 @@ router.delete('/:id/messages/:messageId', requireAuth, async (req, res) => {
     }
 
     if (type === 'everyone') {
-      // Must be sender to delete for everyone
+      // must be sender
       if (message.sender.toString() !== currentUserId.toString()) {
         return res.status(403).json({ error: 'Only the sender can delete a message for everyone' });
       }
 
-      // Update message content to indicate deletion
+      // update message content
       message.content = 'This message was deleted';
-      message.isEdited = true; // Mark as edited/deleted state
-      // Actually we can set a flag or just replace content. Let's replace content and mark as edited/deleted
+      message.isEdited = true; // mark as edited/deleted
+      // actually we can
       await message.save();
 
       const populatedMsg = await Message.findById(message._id)
         .populate('sender', '_id username profilePhoto');
 
-      // Emit event
+      // emit event
       sendToRoom(conversationId, 'message_edited', populatedMsg);
 
-      // Notify conversation update
+      // notify conversation update
       const conversation = await Conversation.findById(conversationId);
       if (conversation && conversation.lastMessage?.toString() === messageId) {
         const otherParticipantId = conversation.participants.find(
@@ -451,13 +451,13 @@ router.delete('/:id/messages/:messageId', requireAuth, async (req, res) => {
 
       return res.json(populatedMsg);
     } else {
-      // Default: delete for me
+      // default: delete for
       if (!message.deletedFor.includes(currentUserId)) {
         message.deletedFor.push(currentUserId);
         await message.save();
       }
 
-      // Emit local event so user's client UI updates immediately
+      // emit local event
       sendToUser(currentUserId, 'message_deleted_for_me', { conversationId, messageId });
 
       return res.json({ message: 'Message deleted for you successfully' });

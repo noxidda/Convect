@@ -23,7 +23,7 @@ const friendRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index to prevent duplicate pending requests between same sender and recipient
+// compound index to
 friendRequestSchema.index({ sender: 1, recipient: 1, status: 1 });
 
 const FriendRequest = mongoose.model('FriendRequest', friendRequestSchema);

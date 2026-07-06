@@ -8,10 +8,10 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import axios from 'axios';
 
-// Get Clerk Publishable Key from environment
+// get clerk publishable
 const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-// Axios default headers interceptor to inject Clerk Token
+// axios default headers
 const AxiosAuthInterceptor = ({ children }) => {
   const { getToken } = useAuth();
   const { user } = useUser();
@@ -28,7 +28,7 @@ const AxiosAuthInterceptor = ({ children }) => {
         } catch (err) {
           console.error('Error attaching token to request:', err);
         }
-        // Always attach Clerk UserId in header as dev fallback
+        // always attach clerk
         if (user) {
           config.headers['x-clerk-user-id'] = user.id;
         }
@@ -71,7 +71,7 @@ const AppContent = () => {
       setSyncError(null);
       try {
         const token = await getToken();
-        // Sync user details with MongoDB
+        // sync user details
         const res = await axios.post('/api/users/sync', {
           username: user.username || user.firstName || '',
           bio: 'Hey there! I am using this chat app.',
@@ -165,7 +165,7 @@ const AppContent = () => {
     );
   }
 
-  // Not Signed In
+  // not signed in
   if (!isSignedIn) {
     return (
       <div className="auth-container">
@@ -178,7 +178,7 @@ const AppContent = () => {
     );
   }
 
-  // Signed In, but not completed onboarding (missing username)
+  // signed in, but
   if (dbUser && !dbUser.username) {
     return (
       <AxiosAuthInterceptor>
@@ -190,7 +190,7 @@ const AppContent = () => {
     );
   }
 
-  // Signed In and onboarded
+  // signed in and
   return (
     <AxiosAuthInterceptor>
       <SocketProvider>
@@ -204,19 +204,19 @@ const AppContent = () => {
 };
 
 const App = () => {
-  // Global theme initialization
+  // global theme initialization
   useEffect(() => {
-    // Remove the data-theme attribute so the root styling applies globally
+    // remove the data-theme
     document.documentElement.removeAttribute('data-theme');
     
-    // Load and set the custom theme color from localStorage
+    // load and set
     const savedColor = localStorage.getItem('convect-theme-color');
     if (savedColor) {
       document.documentElement.style.setProperty('--color', savedColor);
     }
   }, []);
 
-  // If Clerk Publishable Key is missing, render setup notice
+  // if clerk publishable
   if (!clerkPubKey) {
     return (
       <div style={{

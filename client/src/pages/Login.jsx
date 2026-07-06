@@ -31,7 +31,7 @@ const Login = () => {
         navigate('/');
       } else if (result.status === 'needs_second_factor') {
         setPendingMfa(true);
-        // Automatically prepare phone code if it is a supported second factor
+        // automatically prepare phone
         const smsFactor = result.supportedSecondFactors.find(
           (f) => f.strategy === 'phone_code'
         );
@@ -96,12 +96,12 @@ const Login = () => {
       <div className="login-right-side">
         {!pendingMfa ? (
           <div className="login-card">
-            {/* Brand Header */}
+            {/* brand header */}
             <div className="brand-header">
               <h1 className="brand-name">Login</h1>
             </div>
 
-            {/* Error Alert */}
+            {/* error alert */}
             {error && (
               <div className="error-alert">
                 <AlertCircle size={18} className="error-icon" />
@@ -109,7 +109,7 @@ const Login = () => {
               </div>
             )}
 
-            {/* Sign In Form */}
+            {/* sign in form */}
             <form onSubmit={handleSignIn} className="login-form">
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
@@ -155,7 +155,7 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Footer Link */}
+            {/* footer link */}
             <div className="card-footer">
               Don't have an account?{' '}
               <Link to="/signup" className="signup-link">

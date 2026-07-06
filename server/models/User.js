@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema(
       maxlength: 160,
     },
     profilePhoto: {
-      type: String, // Can be base64 or URL path
+      type: String, // can be base64
       default: '',
     },
     blockedUsers: [

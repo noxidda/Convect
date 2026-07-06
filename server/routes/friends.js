@@ -7,7 +7,7 @@ import { sendToUser } from '../socket.js';
 
 const router = express.Router();
 
-// Helper to check if a block exists between two users
+// helper to check
 async function isBlocked(userAId, userBId) {
   const userA = await User.findById(userAId);
   const userB = await User.findById(userBId);
@@ -15,7 +15,7 @@ async function isBlocked(userAId, userBId) {
   return userA.blockedUsers.includes(userBId) || userB.blockedUsers.includes(userAId);
 }
 
-// 1. Send friend request
+// 1. send friend
 router.post('/request', requireAuth, async (req, res) => {
   const { recipientId } = req.body;
 
@@ -31,18 +31,18 @@ router.post('/request', requireAuth, async (req, res) => {
     const recipient = await User.findById(recipientId);
     if (!recipient) return res.status(404).json({ error: 'Recipient not found' });
 
-    // Check if blocked relationship exists
+    // check if blocked
     const blockExists = await isBlocked(currentUserId, recipientId);
     if (blockExists) {
       return res.status(403).json({ error: 'Cannot send friend request. Block relationship exists.' });
     }
 
-    // Check if already friends
+    // check if already
     if (currentUser.friends.includes(recipientId)) {
       return res.status(400).json({ error: 'You are already friends with this user' });
     }
 
-    // Check if there is an existing pending request from us to them
+    // check if there
     const existingSentRequest = await FriendRequest.findOne({
       sender: currentUserId,
       recipient: recipientId,
@@ -52,14 +52,14 @@ router.post('/request', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Friend request already sent' });
     }
 
-    // Check if there is a pending request from them to us
+    // check if there
     const existingRecvRequest = await FriendRequest.findOne({
       sender: recipientId,
       recipient: currentUserId,
       status: 'pending',
     });
     if (existingRecvRequest) {
-      // Auto-accept request if they already sent us one
+      // auto-accept request if
       existingRecvRequest.status = 'accepted';
       await existingRecvRequest.save();
 
@@ -72,7 +72,7 @@ router.post('/request', requireAuth, async (req, res) => {
         await recipient.save();
       }
 
-      // Automatically create conversation document so they appear in Chats list
+      // automatically create conversation
       let conversation = await Conversation.findOne({
         participants: { $all: [currentUserId, recipientId] }
       });
@@ -83,7 +83,7 @@ router.post('/request', requireAuth, async (req, res) => {
         await conversation.save();
       }
 
-      // Notify recipient
+      // notify recipient
       sendToUser(recipientId, 'friend_request_accepted', {
         requestId: existingRecvRequest._id,
         user: {
@@ -101,7 +101,7 @@ router.post('/request', requireAuth, async (req, res) => {
       });
     }
 
-    // Create new pending friend request
+    // create new pending
     const request = new FriendRequest({
       sender: currentUserId,
       recipient: recipientId,
@@ -109,11 +109,11 @@ router.post('/request', requireAuth, async (req, res) => {
     });
     await request.save();
 
-    // Populate sender info for real-time notification
+    // populate sender info
     const populatedRequest = await FriendRequest.findById(request._id)
       .populate('sender', '_id username profilePhoto bio');
 
-    // Notify recipient in real-time
+    // notify recipient in
     sendToUser(recipientId, 'friend_request_received', populatedRequest);
 
     res.status(201).json({ message: 'Friend request sent successfully', status: 'pending', request: populatedRequest });
@@ -123,7 +123,7 @@ router.post('/request', requireAuth, async (req, res) => {
   }
 });
 
-// 2. Get pending incoming requests
+// 2. get pending
 router.get('/requests/pending', requireAuth, async (req, res) => {
   try {
     const currentUser = await User.findOne({ clerkId: req.auth.userId });
@@ -143,7 +143,7 @@ router.get('/requests/pending', requireAuth, async (req, res) => {
   }
 });
 
-// 3. Accept friend request
+// 3. accept friend
 router.post('/accept', requireAuth, async (req, res) => {
   const { requestId } = req.body;
 
@@ -169,7 +169,7 @@ router.post('/accept', requireAuth, async (req, res) => {
     const sender = await User.findById(request.sender);
     if (!sender) return res.status(404).json({ error: 'Sender user not found' });
 
-    // Add each other to friends array
+    // add each other
     if (!currentUser.friends.includes(request.sender)) {
       currentUser.friends.push(request.sender);
       await currentUser.save();
@@ -179,7 +179,7 @@ router.post('/accept', requireAuth, async (req, res) => {
       await sender.save();
     }
 
-    // Automatically create conversation document so they appear in Chats list
+    // automatically create conversation
     let conversation = await Conversation.findOne({
       participants: { $all: [currentUserId, request.sender] }
     });
@@ -190,7 +190,7 @@ router.post('/accept', requireAuth, async (req, res) => {
       await conversation.save();
     }
 
-    // Send real-time notification to request sender that their request was accepted
+    // send real-time notification
     sendToUser(request.sender, 'friend_request_accepted', {
       requestId: request._id,
       user: {
@@ -208,7 +208,7 @@ router.post('/accept', requireAuth, async (req, res) => {
   }
 });
 
-// 4. Reject friend request
+// 4. reject friend
 router.post('/reject', requireAuth, async (req, res) => {
   const { requestId } = req.body;
 
@@ -228,7 +228,7 @@ router.post('/reject', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Request is already processed' });
     }
 
-    // Delete it to keep DB clean and allow future requests
+    // delete it to
     await FriendRequest.findByIdAndDelete(requestId);
 
     res.json({ message: 'Friend request rejected and deleted' });
@@ -238,7 +238,7 @@ router.post('/reject', requireAuth, async (req, res) => {
   }
 });
 
-// 5. Get current friends
+// 5. get current
 router.get('/', requireAuth, async (req, res) => {
   try {
     const currentUser = await User.findOne({ clerkId: req.auth.userId }).populate('friends', '_id username profilePhoto bio blockedUsers restrictedUsers');
@@ -251,7 +251,7 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
-// 6. Remove friend (unfriend)
+// 6. remove friend
 router.post('/remove', requireAuth, async (req, res) => {
   const { friendId } = req.body;
 
@@ -269,7 +269,7 @@ router.post('/remove', requireAuth, async (req, res) => {
     friend.friends = friend.friends.filter(id => id.toString() !== currentUserId.toString());
     await friend.save();
 
-    // Delete any accepted/pending requests between them
+    // delete any accepted/pending
     await FriendRequest.deleteMany({
       $or: [
         { sender: currentUserId, recipient: friendId },
@@ -277,7 +277,7 @@ router.post('/remove', requireAuth, async (req, res) => {
       ]
     });
 
-    // Notify other user
+    // notify other user
     sendToUser(friendId, 'friend_removed', { friendId: currentUserId });
 
     res.json({ message: 'Friend removed successfully' });

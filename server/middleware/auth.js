@@ -17,7 +17,7 @@ export const requireAuth = async (req, res, next) => {
     token = authHeader.split(' ')[1];
   }
 
-  // Graceful fallback for development if CLERK_SECRET_KEY is not configured
+  // graceful fallback for
   if (!process.env.CLERK_SECRET_KEY) {
     const devUserId = req.headers['x-clerk-user-id'];
     if (devUserId) {
@@ -38,7 +38,7 @@ export const requireAuth = async (req, res, next) => {
     });
   }
 
-  // Dynamic import of clerk client to prevent crash if keys are not set yet
+  // dynamic import of
   try {
     const { clerkClient } = await import('@clerk/express');
     
@@ -52,7 +52,7 @@ export const requireAuth = async (req, res, next) => {
   } catch (err) {
     console.error("Clerk token verification failed, checking fallback:", err.message);
     
-    // Fallback: If verification fails, try base64 decoding for development testing
+    // fallback: if verification
     const decoded = decodeClerkToken(token);
     if (decoded && decoded.sub) {
       console.warn("Clerk verifyToken failed, but decoded sub claim found. Allowing in dev fallback.");

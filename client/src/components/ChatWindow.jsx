@@ -18,19 +18,19 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
   const contact = activeChat.contact;
   const contactId = contact._id;
 
-  // Retrieve online status
+  // retrieve online status
   const isOnline = onlineUsers.get(contactId) === 'online';
 
-  // Retrieve typing status for contact in this chat
+  // retrieve typing status
   const isTyping = typingUsers[chatId]?.[contactId] || false;
 
-  // Fetch messages when chat changes
+  // fetch messages when
   useEffect(() => {
     setLoading(true);
     setMessages([]);
     setInputValue('');
     
-    // Join socket room
+    // join socket room
     joinChat(chatId);
 
     const fetchMessages = async () => {
@@ -47,26 +47,26 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
     fetchMessages();
 
     return () => {
-      // Leave room
+      // leave room
       leaveChat(chatId);
     };
   }, [chatId]);
 
-  // Re-join socket room when socket connection state resets
+  // re-join socket room
   useEffect(() => {
     if (socket && connected) {
       joinChat(chatId);
     }
   }, [chatId, socket, connected]);
 
-  // Handle incoming real-time socket events
+  // handle incoming real-time
   useEffect(() => {
     if (!socket) return;
 
     const handleNewMessage = (msg) => {
       if (msg.conversationId === chatId) {
         setMessages((prev) => {
-          // Prevent duplicates
+          // prevent duplicates
           if (prev.some((m) => m._id === msg._id)) return prev;
           return [...prev, msg];
         });
@@ -99,31 +99,31 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
     };
   }, [socket, chatId]);
 
-  // Scroll to bottom whenever messages or typing state changes
+  // scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // Typing state emitter
+  // typing state emitter
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
 
-    // Emit typing status
+    // emit typing status
     emitTyping(chatId, true);
 
-    // Debounce typing status clear
+    // debounce typing status
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(() => {
       emitTyping(chatId, false);
     }, 2000);
   };
 
-  // Send Message
+  // send message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    // Clear typing timeout immediately
+    // clear typing timeout
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     emitTyping(chatId, false);
 
@@ -134,7 +134,7 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
       const res = await axios.post(`/api/conversations/${chatId}/messages`, {
         content: messageText,
       });
-      // Optimistic local state update to display sent message immediately
+      // optimistic local state
       setMessages((prev) => {
         if (prev.some((m) => m._id === res.data._id)) return prev;
         return [...prev, res.data];
@@ -144,7 +144,7 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
     }
   };
 
-  // Format timestamp (just time or full date if needed)
+  // format timestamp (just
   const formatTime = (isoString) => {
     const date = new Date(isoString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -152,7 +152,7 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
 
   return (
     <div className="chat-window-container">
-      {/* Header */}
+      {/* header */}
       <div className="chat-header">
         <div className="chat-header-left">
           <button className="back-btn" onClick={onBack}>
@@ -206,7 +206,7 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
         </div>
       </div>
 
-      {/* Messages Thread */}
+      {/* messages thread */}
       <div className="messages-thread">
         {loading ? (
           <div className="messages-loading">Loading history...</div>
@@ -241,7 +241,7 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input panel */}
+      {/* input panel */}
       {contact.isBlocked ? (
         <div className="chat-input-blocked-notice">
           You have blocked this user. Unblock to send messages.

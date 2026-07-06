@@ -2,7 +2,7 @@ import { Server } from 'socket.io';
 import User from './models/User.js';
 
 let io = null;
-const userSockets = new Map(); // mongoUserId (string) -> Set of socketIds (to support multiple tabs)
+const userSockets = new Map(); // mongouserid (string) ->
 
 function decodeClerkToken(token) {
   try {
@@ -10,7 +10,7 @@ function decodeClerkToken(token) {
     if (parts.length !== 3) return null;
     const payloadJson = Buffer.from(parts[1], 'base64').toString('utf-8');
     const payload = JSON.parse(payloadJson);
-    return payload; // contains 'sub' which is Clerk's userId
+    return payload; // contains 'sub' which
   } catch (err) {
     console.error('Error decoding Clerk JWT:', err);
     return null;
@@ -34,7 +34,7 @@ export const initSocket = (httpServer) => {
       clerkId = decoded?.sub;
     }
 
-    // Fallback: check if clerkId was passed directly in query (useful for dev/testing)
+    // fallback: check if
     if (!clerkId) {
       clerkId = socket.handshake.query?.clerkId;
     }
@@ -46,7 +46,7 @@ export const initSocket = (httpServer) => {
     }
 
     try {
-      // Find the user in MongoDB
+      // find the user
       const user = await User.findOne({ clerkId });
       if (!user) {
         console.log(`Socket connection rejected: User with clerkId ${clerkId} not found in DB.`);
@@ -58,7 +58,7 @@ export const initSocket = (httpServer) => {
       socket.userId = mongoUserId;
       socket.username = user.username || 'Anonymous';
 
-      // Store socket connection
+      // store socket connection
       if (!userSockets.has(mongoUserId)) {
         userSockets.set(mongoUserId, new Set());
       }
@@ -66,13 +66,13 @@ export const initSocket = (httpServer) => {
 
       console.log(`User connected: ${socket.username} (${mongoUserId}) - socket: ${socket.id}`);
 
-      // Emit status updates: User is online
+      // emit status updates:
       io.emit('user_status', {
         userId: mongoUserId,
         status: 'online',
       });
 
-      // Join standard rooms
+      // join standard rooms
       socket.on('join_room', (chatId) => {
         socket.join(chatId);
         console.log(`Socket ${socket.id} joined chat: ${chatId}`);
@@ -83,9 +83,9 @@ export const initSocket = (httpServer) => {
         console.log(`Socket ${socket.id} left chat: ${chatId}`);
       });
 
-      // Typing indicators
+      // typing indicators
       socket.on('typing', ({ chatId, isTyping }) => {
-        // Send typing indicator to others in the room
+        // send typing indicator
         socket.to(chatId).emit('typing_status', {
           chatId,
           userId: mongoUserId,
@@ -99,7 +99,7 @@ export const initSocket = (httpServer) => {
           sockets.delete(socket.id);
           if (sockets.size === 0) {
             userSockets.delete(mongoUserId);
-            // Broadcast user is offline
+            // broadcast user is
             io.emit('user_status', {
               userId: mongoUserId,
               status: 'offline',
@@ -118,7 +118,7 @@ export const initSocket = (httpServer) => {
   return io;
 };
 
-// Send real-time event to specific user (across all open sockets/tabs)
+// send real-time event
 export const sendToUser = (mongoUserId, event, data) => {
   if (!io) return;
   const sockets = userSockets.get(mongoUserId.toString());
@@ -129,13 +129,13 @@ export const sendToUser = (mongoUserId, event, data) => {
   }
 };
 
-// Send real-time event to everyone in a chat room
+// send real-time event
 export const sendToRoom = (chatId, event, data) => {
   if (!io) return;
   io.to(chatId).emit(event, data);
 };
 
-// Check if a user is online
+// check if a
 export const isUserOnline = (mongoUserId) => {
   return userSockets.has(mongoUserId.toString());
 };

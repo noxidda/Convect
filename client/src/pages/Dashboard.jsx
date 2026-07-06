@@ -14,32 +14,32 @@ const Dashboard = ({ dbUser }) => {
   const { signOut } = useClerk();
   const { socket, onlineUsers, setOnlineUsers } = useSocket();
 
-  // State
+  // state
   const [currentUser, setCurrentUser] = useState(dbUser || null);
   const [conversations, setConversations] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   
-  // Tabs: 'all' | 'friends' | 'requests' | 'restricted' | 'blocked'
+  // tabs: 'all' |
   const [activeTab, setActiveTab] = useState('all');
   
-  // Search
+  // search
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Friends & Requests State
+  // friends & requests
   const [friends, setFriends] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [actionLoading, setActionLoading] = useState({});
   
-  // Modals
+  // modals
   const [showSettings, setShowSettings] = useState(false);
   const [selectedPreviewUser, setSelectedPreviewUser] = useState(null);
   
-  // UI Responsive (for mobile split pane)
+  // ui responsive (for
   const [viewingChatMobile, setViewingChatMobile] = useState(false);
 
-  // Dropdown for requests in navbar
+  // dropdown for requests
   const [showRequestsDropdown, setShowRequestsDropdown] = useState(false);
   const requestsDropdownRef = useRef(null);
 
@@ -55,7 +55,7 @@ const Dashboard = ({ dbUser }) => {
     };
   }, []);
 
-  // Fetch self user profile on load
+  // fetch self user
   useEffect(() => {
     const fetchSelf = async () => {
       try {
@@ -68,17 +68,17 @@ const Dashboard = ({ dbUser }) => {
     fetchSelf();
   }, []);
 
-  // Fetch conversations
+  // fetch conversations
   const fetchConversations = async () => {
     try {
       const res = await axios.get('/api/conversations');
       setConversations(res.data);
 
-      // Populate online status of active conversations
+      // populate online status
       const newOnline = new Map(onlineUsers);
       res.data.forEach((c) => {
         if (c.contact && c.contact._id) {
-          // If not set yet, mark offline default, socket will update
+          // if not set
           if (!newOnline.has(c.contact._id)) {
             newOnline.set(c.contact._id, 'offline');
           }
@@ -91,7 +91,7 @@ const Dashboard = ({ dbUser }) => {
     }
   };
 
-  // Fetch friends list
+  // fetch friends list
   const fetchFriends = async () => {
     try {
       const res = await axios.get('/api/friends');
@@ -101,7 +101,7 @@ const Dashboard = ({ dbUser }) => {
     }
   };
 
-  // Fetch pending requests list
+  // fetch pending requests
   const fetchPendingRequests = async () => {
     try {
       const res = await axios.get('/api/friends/requests/pending');
@@ -119,12 +119,12 @@ const Dashboard = ({ dbUser }) => {
     }
   }, [currentUser]);
 
-  // Socket updates for conversation lastMessages and friend actions
+  // socket updates for
   useEffect(() => {
     if (!socket) return;
 
     const handleConvUpdate = ({ conversationId, message }) => {
-      // Refresh list to pull newest lastMessage and re-sort
+      // refresh list to
       fetchConversations();
     };
 
@@ -163,7 +163,7 @@ const Dashboard = ({ dbUser }) => {
     };
   }, [socket, activeChat]);
 
-  // Friend Request Action Handlers
+  // friend request action
   const handleSendFriendRequest = async (recipientId) => {
     setActionLoading(prev => ({ ...prev, [recipientId]: true }));
     try {
@@ -255,7 +255,7 @@ const Dashboard = ({ dbUser }) => {
     }
   };
 
-  // Handle username search
+  // handle username search
   useEffect(() => {
     const delayDebounce = setTimeout(async () => {
       if (searchQuery.trim().length >= 1) {
@@ -275,21 +275,21 @@ const Dashboard = ({ dbUser }) => {
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  // Select or Create Chat
+  // select or create
   const handleSelectContact = async (contactId) => {
     try {
       const res = await axios.post('/api/conversations', { recipientId: contactId });
       
-      // Update conversations list
+      // update conversations list
       await fetchConversations();
 
-      // Find in conversation list and set active
+      // find in conversation
       setActiveChat(res.data);
       setSearchQuery('');
       setSearchResults([]);
       setIsSearching(false);
       
-      // Responsive switch
+      // responsive switch
       setViewingChatMobile(true);
     } catch (err) {
       console.error('Error opening conversation:', err);
@@ -297,26 +297,26 @@ const Dashboard = ({ dbUser }) => {
     }
   };
 
-  // Select conversation directly from sidebar list
+  // select conversation directly
   const handleSelectConversation = (conv) => {
     setActiveChat(conv);
     setViewingChatMobile(true);
   };
 
-  // Block/Unblock toggle
+  // block/unblock toggle
   const handleBlockToggle = async (targetUserId, currentlyBlocked) => {
     try {
       const url = currentlyBlocked ? '/api/users/unblock' : '/api/users/block';
       await axios.post(url, { targetUserId });
 
-      // Refresh currentUser blocked lists
+      // refresh currentuser blocked
       const profileRes = await axios.get('/api/users/profile');
       setCurrentUser(profileRes.data);
 
-      // Refresh conversations lists
+      // refresh conversations lists
       await fetchConversations();
 
-      // Update active chat details if applicable
+      // update active chat
       if (activeChat && activeChat.contact._id === targetUserId) {
         setActiveChat((prev) => ({
           ...prev,
@@ -331,20 +331,20 @@ const Dashboard = ({ dbUser }) => {
     }
   };
 
-  // Restrict/Unrestrict toggle
+  // restrict/unrestrict toggle
   const handleRestrictToggle = async (targetUserId, currentlyRestricted) => {
     try {
       const url = currentlyRestricted ? '/api/users/unrestrict' : '/api/users/restrict';
       await axios.post(url, { targetUserId });
 
-      // Refresh profile
+      // refresh profile
       const profileRes = await axios.get('/api/users/profile');
       setCurrentUser(profileRes.data);
 
-      // Refresh conversations list
+      // refresh conversations list
       await fetchConversations();
 
-      // Update active chat details
+      // update active chat
       if (activeChat && activeChat.contact._id === targetUserId) {
         setActiveChat((prev) => ({
           ...prev,
@@ -359,16 +359,16 @@ const Dashboard = ({ dbUser }) => {
     }
   };
 
-  // Handle chat deletion locally
+  // handle chat deletion
   const handleChatDeleted = (deletedChatId) => {
     setConversations((prev) => prev.filter((c) => c._id !== deletedChatId));
     setActiveChat(null);
     setViewingChatMobile(false);
   };
 
-  // Filter conversations based on selected tab
+  // filter conversations based
   const getFilteredConversations = () => {
-    // Only return conversations with active friends
+    // only return conversations
     const friendConversations = conversations.filter((c) =>
       friends.some((f) => f._id === c.contact._id)
     );
@@ -376,11 +376,11 @@ const Dashboard = ({ dbUser }) => {
     if (activeTab === 'restricted') {
       return friendConversations.filter((c) => c.contact.isRestricted);
     }
-    // 'all' tab returns chats that are NOT restricted
+    // 'all' tab returns
     return friendConversations.filter((c) => !c.contact.isRestricted);
   };
 
-  // Format timestamp for sidebar list
+  // format timestamp for
   const formatLastMsgTime = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
@@ -396,7 +396,7 @@ const Dashboard = ({ dbUser }) => {
 
   return (
     <div className="dashboard-container">
-      {/* Top Header Banner */}
+      {/* top header banner */}
       <div className="dashboard-top-header">
         <div className="header-logo-section">
           <h1 className="app-logo-text">CONVECT</h1>
@@ -482,10 +482,10 @@ const Dashboard = ({ dbUser }) => {
         </div>
       </div>
 
-      {/* Main Grid Container */}
+      {/* main grid container */}
       <div className="dashboard-grid-container">
         
-        {/* COLUMN 1: CONTROLS DESK */}
+        {/* column 1: controls */}
         <div className={`controls-column controls-pane ${viewingChatMobile ? 'mobile-hidden' : ''}`}>
           <div className="controls-nav-stack">
             <button 
@@ -529,9 +529,9 @@ const Dashboard = ({ dbUser }) => {
           
         </div>
 
-        {/* COLUMN 2: DIRECTORY / LISTS */}
+        {/* column 2: directory */}
         <div className={`directory-column directory-pane ${viewingChatMobile ? 'mobile-hidden' : ''}`}>
-          {/* Search bar */}
+          {/* search bar */}
           <div className="directory-search-wrapper">
             <div className="search-box-brutalist">
               <input
@@ -544,10 +544,10 @@ const Dashboard = ({ dbUser }) => {
             </div>
           </div>
 
-          {/* Directory Body */}
+          {/* directory body */}
           <div className="directory-list-wrapper">
             {isSearching ? (
-              /* Search Results View */
+              /* search results view */
               <div className="search-results-list">
                 <h4 className="list-section-title">Search Results</h4>
                 {searchResults.length === 0 ? (
@@ -575,7 +575,7 @@ const Dashboard = ({ dbUser }) => {
                           <div className="contact-bio">{user.bio}</div>
                         </div>
                         
-                        {/* Relationship Action Buttons */}
+                        {/* relationship action buttons */}
                         <div className="contact-actions" onClick={(e) => e.stopPropagation()}>
                           {user.relationship === 'friend' && (
                             <button 
@@ -627,7 +627,7 @@ const Dashboard = ({ dbUser }) => {
                 )}
               </div>
             ) : activeTab === 'blocked' ? (
-              /* Blocked Users list tab */
+              /* blocked users list */
               <div className="blocked-users-list">
                 <h4 className="list-section-title">Blocked Users</h4>
                 {conversations.filter(c => c.contact.isBlocked).length === 0 ? (

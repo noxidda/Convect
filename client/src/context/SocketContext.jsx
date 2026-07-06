@@ -13,8 +13,8 @@ export const SocketProvider = ({ children }) => {
   const { user } = useUser();
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
-  const [onlineUsers, setOnlineUsers] = useState(new Map()); // userId -> 'online' | 'offline'
-  const [typingUsers, setTypingUsers] = useState({}); // chatId -> { userId: boolean }
+  const [onlineUsers, setOnlineUsers] = useState(new Map()); // userid -> 'online'
+  const [typingUsers, setTypingUsers] = useState({}); // chatid -> {
   const socketRef = useRef(null);
 
   useEffect(() => {
@@ -22,21 +22,21 @@ export const SocketProvider = ({ children }) => {
 
     const establishConnection = async () => {
       if (isSignedIn && user) {
-        // Disconnect old socket if any
+        // disconnect old socket
         if (socketRef.current) {
           socketRef.current.disconnect();
         }
 
         let token = null;
         try {
-          // Retrieve Clerk session token
+          // retrieve clerk session
           token = await getToken();
         } catch (err) {
           console.error('Error fetching Clerk token:', err);
         }
 
-        // Establish connection to backend
-        // We pass the token in auth and clerkId in query as fallback
+        // establish connection to
+        // we pass the
         const newSocket = io(window.location.origin, {
           auth: { token },
           query: { clerkId: user.id },
@@ -56,7 +56,7 @@ export const SocketProvider = ({ children }) => {
           console.log('Socket.io disconnected');
         });
 
-        // Listen for user online status updates
+        // listen for user
         newSocket.on('user_status', ({ userId, status }) => {
           setOnlineUsers((prev) => {
             const next = new Map(prev);
@@ -65,7 +65,7 @@ export const SocketProvider = ({ children }) => {
           });
         });
 
-        // Listen for typing status updates
+        // listen for typing
         newSocket.on('typing_status', ({ chatId, userId, isTyping }) => {
           setTypingUsers((prev) => {
             const chatTyping = prev[chatId] || {};
@@ -79,16 +79,16 @@ export const SocketProvider = ({ children }) => {
           });
         });
 
-        // Listen for local delete message event
+        // listen for local
         newSocket.on('message_deleted_for_me', ({ conversationId, messageId }) => {
-          // Custom dispatch to window to communicate to component if needed,
-          // or components can listen directly. We can trigger custom event.
+          // custom dispatch to
+          // or components can
           const event = new CustomEvent('local_message_deleted', { detail: { conversationId, messageId } });
           window.dispatchEvent(event);
         });
 
       } else {
-        // Logged out, clean up
+        // logged out, clean
         if (socketRef.current) {
           socketRef.current.disconnect();
           socketRef.current = null;
@@ -107,21 +107,21 @@ export const SocketProvider = ({ children }) => {
     };
   }, [isSignedIn, user, isLoaded]);
 
-  // Utility to emit typing status
+  // utility to emit
   const emitTyping = (chatId, isTyping) => {
     if (socketRef.current && connected) {
       socketRef.current.emit('typing', { chatId, isTyping });
     }
   };
 
-  // Utility to join chat room
+  // utility to join
   const joinChat = (chatId) => {
     if (socketRef.current && connected) {
       socketRef.current.emit('join_room', chatId);
     }
   };
 
-  // Utility to leave chat room
+  // utility to leave
   const leaveChat = (chatId) => {
     if (socketRef.current && connected) {
       socketRef.current.emit('leave_room', chatId);

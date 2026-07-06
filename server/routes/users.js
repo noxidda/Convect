@@ -7,7 +7,7 @@ import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// 1. Sync User (Create profile if it doesn't exist)
+// 1. sync user
 router.post('/sync', requireAuth, async (req, res) => {
   const clerkId = req.auth.userId;
   const { username, bio, profilePhoto } = req.body;
@@ -15,19 +15,19 @@ router.post('/sync', requireAuth, async (req, res) => {
   try {
     let user = await User.findOne({ clerkId });
     if (!user) {
-      // Check if username is already taken (if provided)
+      // check if username
       let finalUsername = username;
       if (username) {
         const existingUser = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
         if (existingUser) {
-          // If username is taken, generate a random suffix
+          // if username is
           finalUsername = `${username}_${Math.floor(1000 + Math.random() * 9000)}`;
         }
       }
 
       user = new User({
         clerkId,
-        username: finalUsername || null, // Allow null initially, will set in onboarding
+        username: finalUsername || null, // allow null initially,
         bio: bio || 'Hey there! I am using this chat app.',
         profilePhoto: profilePhoto || '',
       });
@@ -42,7 +42,7 @@ router.post('/sync', requireAuth, async (req, res) => {
   }
 });
 
-// 2. Get User Profile (Self)
+// 2. get user
 router.get('/profile', requireAuth, async (req, res) => {
   try {
     const user = await User.findOne({ clerkId: req.auth.userId });
@@ -55,7 +55,7 @@ router.get('/profile', requireAuth, async (req, res) => {
   }
 });
 
-// 3. Update User Profile (Self)
+// 3. update user
 router.put('/profile', requireAuth, async (req, res) => {
   const { username, bio, profilePhoto } = req.body;
   const clerkId = req.auth.userId;
@@ -72,7 +72,7 @@ router.put('/profile', requireAuth, async (req, res) => {
         return res.status(400).json({ error: 'Username must be between 3 and 30 characters' });
       }
 
-      // Check if username is taken by someone else
+      // check if username
       const existingUser = await User.findOne({
         username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') },
         _id: { $ne: user._id }
@@ -99,7 +99,7 @@ router.put('/profile', requireAuth, async (req, res) => {
   }
 });
 
-// 4. Search Usernames
+// 4. search usernames
 router.get('/search', requireAuth, async (req, res) => {
   const { q } = req.query;
   try {
@@ -112,19 +112,19 @@ router.get('/search', requireAuth, async (req, res) => {
       return res.json([]);
     }
 
-    // Find users whose username matches query, excluding self and blocked/blocking users
+    // find users whose
     const users = await User.find({
       username: { $regex: q.trim(), $options: 'i' },
       _id: { 
         $ne: currentUser._id,
         $nin: currentUser.blockedUsers 
       },
-      blockedUsers: { $ne: currentUser._id } // Also exclude users who blocked current user
+      blockedUsers: { $ne: currentUser._id } // also exclude users
     })
     .select('_id username bio profilePhoto')
     .limit(10);
 
-    // Map relationships
+    // map relationships
     const usersWithRelationships = await Promise.all(
       users.map(async (u) => {
         let relationship = 'none';
@@ -133,7 +133,7 @@ router.get('/search', requireAuth, async (req, res) => {
         if (currentUser.friends.includes(u._id)) {
           relationship = 'friend';
         } else {
-          // Check for pending request sent by me
+          // check for pending
           const pendingSent = await FriendRequest.findOne({
             sender: currentUser._id,
             recipient: u._id,
@@ -144,7 +144,7 @@ router.get('/search', requireAuth, async (req, res) => {
             relationship = 'sent_pending';
             requestId = pendingSent._id;
           } else {
-            // Check for pending request received by me
+            // check for pending
             const pendingRecv = await FriendRequest.findOne({
               sender: u._id,
               recipient: currentUser._id,
@@ -173,7 +173,7 @@ router.get('/search', requireAuth, async (req, res) => {
   }
 });
 
-// 5. Block User
+// 5. block user
 router.post('/block', requireAuth, async (req, res) => {
   const { targetUserId } = req.body;
   try {
@@ -195,7 +195,7 @@ router.post('/block', requireAuth, async (req, res) => {
   }
 });
 
-// 6. Unblock User
+// 6. unblock user
 router.post('/unblock', requireAuth, async (req, res) => {
   const { targetUserId } = req.body;
   try {
@@ -213,7 +213,7 @@ router.post('/unblock', requireAuth, async (req, res) => {
   }
 });
 
-// 7. Restrict User
+// 7. restrict user
 router.post('/restrict', requireAuth, async (req, res) => {
   const { targetUserId } = req.body;
   try {
@@ -235,7 +235,7 @@ router.post('/restrict', requireAuth, async (req, res) => {
   }
 });
 
-// 8. Unrestrict User
+// 8. unrestrict user
 router.post('/unrestrict', requireAuth, async (req, res) => {
   const { targetUserId } = req.body;
   try {
@@ -253,7 +253,7 @@ router.post('/unrestrict', requireAuth, async (req, res) => {
   }
 });
 
-// 9. Delete Account
+// 9. delete account
 router.delete('/account', requireAuth, async (req, res) => {
   const clerkId = req.auth.userId;
 
@@ -265,7 +265,7 @@ router.delete('/account', requireAuth, async (req, res) => {
 
     const mongoUserId = user._id;
 
-    // Delete user from other users' blocked and restricted lists
+    // delete user from
     await User.updateMany(
       {},
       {
@@ -276,17 +276,17 @@ router.delete('/account', requireAuth, async (req, res) => {
       }
     );
 
-    // Delete messages sent by user (or soft delete, but full delete is cleaner for account deletion)
+    // delete messages sent
     await Message.deleteMany({ sender: mongoUserId });
 
-    // Find and delete conversations user participated in
-    // To be clean, we delete the conversations entirely if they are direct chats
+    // find and delete
+    // to be clean,
     await Conversation.deleteMany({ participants: mongoUserId });
 
-    // Delete User model
+    // delete user model
     await User.deleteOne({ _id: mongoUserId });
 
-    // Call Clerk API to delete user if secret key is present
+    // call clerk api
     if (process.env.CLERK_SECRET_KEY) {
       try {
         const { clerkClient } = await import('@clerk/express');

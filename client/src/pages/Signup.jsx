@@ -14,7 +14,7 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Handle Initial Account Submission
+  // handle initial account
   const handleSignUpSubmit = async (e) => {
     e.preventDefault();
     if (!isLoaded || loading) return;
@@ -31,7 +31,7 @@ const Signup = () => {
         await setActive({ session: result.createdSessionId });
         navigate('/');
       } else {
-        // Send the verification code
+        // send the verification
         await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
         setPendingVerification(true);
       }
@@ -43,7 +43,7 @@ const Signup = () => {
     }
   };
 
-  // Handle OTP Verification Code Submission
+  // handle otp verification
   const handleVerifySubmit = async (e) => {
     e.preventDefault();
     if (!isLoaded || loading) return;
@@ -77,7 +77,7 @@ const Signup = () => {
       </div>
       <div className="signup-right-side">
         <div className="signup-card">
-          {/* Brand Header */}
+          {/* brand header */}
           <div className="brand-header">
             <h1 className="brand-name">Create Account</h1>
             <p className="brand-tagline">
@@ -87,7 +87,7 @@ const Signup = () => {
             </p>
           </div>
 
-          {/* Error Alert */}
+          {/* error alert */}
           {error && (
             <div className="error-alert">
               <AlertCircle size={18} className="error-icon" />
@@ -95,7 +95,7 @@ const Signup = () => {
             </div>
           )}
 
-          {/* Account Details Step */}
+          {/* account details step */}
           {!pendingVerification ? (
             <form onSubmit={handleSignUpSubmit} className="signup-form">
               <div className="form-group">
@@ -144,7 +144,7 @@ const Signup = () => {
               </button>
             </form>
           ) : (
-            /* OTP Code Verification Step */
+            /* otp code verification */
             <form onSubmit={handleVerifySubmit} className="signup-form">
               <div className="form-group">
                 <label htmlFor="code">Verification Code</label>
@@ -189,7 +189,7 @@ const Signup = () => {
             </form>
           )}
 
-          {/* Footer Link */}
+          {/* footer link */}
           <div className="card-footer">
             Already have an account?{' '}
             <Link to="/login" className="login-link">

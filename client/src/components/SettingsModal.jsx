@@ -25,7 +25,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
     return localStorage.getItem('convect-theme-color') || '#D6C9FF';
   });
 
-  // Cropping States
+  // cropping states
   const [cropImageObj, setCropImageObj] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -36,7 +36,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
 
 
-  // Canvas drawing effect for cropping
+  // canvas drawing effect
   useEffect(() => {
     if (!showCropModal || !cropImageObj || !canvasRef.current) return;
     
@@ -185,7 +185,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
     try {
       await axios.delete('/api/users/account');
-      // Sign out from Clerk
+      // sign out from
       signOut(() => {
         window.location.href = '/login';
       });
@@ -211,7 +211,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         <div className="modal-body">
           <form onSubmit={handleSave} className="settings-form">
-            {/* Profile Image Section */}
+            {/* profile image section */}
             <div className="settings-photo-section">
               <div className="settings-photo-container">
                 {photoUrl ? (
@@ -234,7 +234,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
               </div>
             </div>
 
-            {/* Bio Field */}
+            {/* bio field */}
             <div className="settings-group">
               <label className="settings-label">
                 <FileText size={16} /> Bio
@@ -248,7 +248,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
               />
             </div>
 
-            {/* Theme Color Section */}
+            {/* theme color section */}
             <div className="settings-group">
               <label className="settings-label" style={{ textTransform: 'uppercase', fontWeight: 900 }}>
                 Theme Color
@@ -286,7 +286,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
           <hr className="modal-divider" />
 
-          {/* Delete Account Section */}
+          {/* delete account section */}
           <div className="delete-account-section">
             <button
               type="button"

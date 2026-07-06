@@ -15,7 +15,7 @@ const Onboarding = ({ onOnboarded }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Cropping States
+  // cropping states
   const [cropImageObj, setCropImageObj] = useState(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -31,7 +31,7 @@ const Onboarding = ({ onOnboarded }) => {
     }
   }, [user]);
 
-  // Canvas drawing effect for cropping
+  // canvas drawing effect
   useEffect(() => {
     if (!showCropModal || !cropImageObj || !canvasRef.current) return;
     
@@ -168,7 +168,7 @@ const Onboarding = ({ onOnboarded }) => {
         onOnboarded(res.data);
       }
 
-      // Redirect to main chat dashboard
+      // redirect to main
       navigate('/');
     } catch (err) {
       console.error('Onboarding update error:', err);
