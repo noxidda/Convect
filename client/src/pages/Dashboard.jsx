@@ -445,15 +445,17 @@ const Dashboard = ({ dbUser }) => {
                                 className="request-action-btn accept hover-item"
                                 disabled={isLoad}
                                 onClick={() => handleAcceptFriendRequest(reqItem._id, reqItem.sender._id)}
+                                title="Accept"
                               >
-                                Accept
+                                {isLoad ? <Loader2 size={16} className="spinner" /> : <Check size={16} />}
                               </button>
                               <button 
                                 className="request-action-btn reject hover-item"
                                 disabled={isLoad}
                                 onClick={() => handleRejectFriendRequest(reqItem._id, reqItem.sender._id)}
+                                title="Reject"
                               >
-                                Reject
+                                {isLoad ? <Loader2 size={16} className="spinner" /> : <X size={16} />}
                               </button>
                             </div>
                           </div>
@@ -1540,13 +1542,14 @@ const Dashboard = ({ dbUser }) => {
 
         .request-action-btn {
           border: 3px solid var(--black);
-          padding: 0.4rem 0.8rem;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
           border-radius: var(--border-radius);
-          font-size: var(--text-xs);
-          font-weight: 900;
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          text-transform: uppercase;
           box-shadow: 2px 2px 0px var(--black);
         }
 
