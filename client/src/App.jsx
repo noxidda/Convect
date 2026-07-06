@@ -208,6 +208,12 @@ const App = () => {
   useEffect(() => {
     // Remove the data-theme attribute so the root styling applies globally
     document.documentElement.removeAttribute('data-theme');
+    
+    // Load and set the custom theme color from localStorage
+    const savedColor = localStorage.getItem('convect-theme-color');
+    if (savedColor) {
+      document.documentElement.style.setProperty('--color', savedColor);
+    }
   }, []);
 
   // If Clerk Publishable Key is missing, render setup notice
@@ -220,38 +226,39 @@ const App = () => {
         alignItems: 'center',
         padding: '2rem',
         height: '100vh',
-        backgroundColor: '#FEF9C3',
+        backgroundColor: '#D6C9FF',
         color: '#000000',
         textAlign: 'center'
       }}>
         <div style={{
           maxWidth: '500px',
           backgroundColor: '#FFFFFF',
-          border: '2px solid #A3E635',
-          borderRadius: '8px',
+          border: '4px solid #000000',
+          borderRadius: '4px',
           padding: '2.5rem',
-          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+          boxShadow: '8px 8px 0px #000000'
         }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Clerk Configuration Required</h2>
-          <p style={{ color: '#374151', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 900, marginBottom: '1rem', textTransform: 'uppercase' }}>Clerk Configuration Required</h2>
+          <p style={{ color: '#000000', marginBottom: '1.5rem', lineHeight: 1.4, fontWeight: 600 }}>
             To run this application, you must configure your Clerk Publishable Key in the client side environment variables.
           </p>
           <div style={{
             textAlign: 'left',
-            backgroundColor: '#F3F4F6',
+            backgroundColor: '#F5F5F5',
+            border: '3px solid #000000',
             padding: '1rem',
-            borderRadius: '8px',
+            borderRadius: '4px',
             fontSize: '0.875rem',
             fontFamily: 'monospace',
             marginBottom: '1.5rem'
           }}>
             Create a file named <strong>.env</strong> in the <strong>client</strong> directory and add:
             <br />
-            <code style={{ display: 'block', marginTop: '0.5rem', color: '#111827', fontWeight: 600 }}>
+            <code style={{ display: 'block', marginTop: '0.5rem', color: '#000000', fontWeight: 900 }}>
               VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
             </code>
           </div>
-          <p style={{ fontSize: '0.875rem', color: '#6B7280' }}>
+          <p style={{ fontSize: '0.875rem', color: '#222222', fontWeight: 600 }}>
             Refresh this page after adding the environment variables.
           </p>
         </div>
@@ -278,118 +285,138 @@ const App = () => {
         }
         
         .cl-card {
-          background-color: var(--bg-card) !important;
-          border: 1px solid var(--border) !important;
-          border-radius: var(--border-radius) !important;
-          box-shadow: var(--shadow-md) !important;
+          background-color: #FFFFFF !important;
+          border: 4px solid #000000 !important;
+          border-radius: 4px !important;
+          box-shadow: 8px 8px 0px #000000 !important;
           width: 100% !important;
           max-width: 400px !important;
           padding: 2.5rem !important;
         }
 
         .cl-headerTitle {
-          color: var(--text-primary) !important;
+          color: #000000 !important;
           font-family: var(--font-sans) !important;
-          font-weight: 700 !important;
-          font-size: var(--text-xl) !important;
+          font-weight: 900 !important;
+          font-size: 1.5rem !important;
+          text-transform: uppercase !important;
+          letter-spacing: -0.02em !important;
         }
 
         .cl-headerSubtitle {
-          color: var(--text-muted) !important;
+          color: #222222 !important;
           font-family: var(--font-sans) !important;
           font-size: var(--text-sm) !important;
+          font-weight: 600 !important;
         }
 
         .cl-formLabel {
-          color: var(--text-secondary) !important;
-          font-weight: 600 !important;
+          color: #000000 !important;
+          font-weight: 900 !important;
           font-size: var(--text-xs) !important;
           text-transform: uppercase !important;
           letter-spacing: 0.05em !important;
         }
 
         .cl-formFieldInput {
-          background-color: var(--bg-card) !important;
-          border: 1px solid var(--border) !important;
-          border-radius: var(--border-radius) !important;
-          color: var(--text-primary) !important;
+          background-color: #FFFFFF !important;
+          border: 3px solid #000000 !important;
+          border-radius: 4px !important;
+          color: #000000 !important;
           padding: 0.75rem 1rem !important;
           font-size: var(--text-sm) !important;
           outline: none !important;
+          box-shadow: 3px 3px 0px #000000 !important;
         }
 
         .cl-formFieldInput:focus {
-          border-color: var(--accent) !important;
-          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25) !important;
+          background-color: #D6C9FF !important;
+          border-color: #000000 !important;
+          box-shadow: 5px 5px 0px #000000 !important;
         }
 
         .cl-formButtonPrimary {
-          background-color: var(--accent) !important;
-          color: var(--bg-sidebar) !important;
-          font-weight: 600 !important;
-          border-radius: var(--border-radius) !important;
+          background-color: #D6C9FF !important;
+          color: #000000 !important;
+          font-weight: 900 !important;
+          border-radius: 4px !important;
           padding: 0.75rem 1.5rem !important;
-          transition: background-color 0.2s ease, opacity 0.2s ease !important;
-          border: none !important;
-          box-shadow: none !important;
-          text-transform: none !important;
+          transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+          border: 3px solid #000000 !important;
+          box-shadow: 4px 4px 0px #000000 !important;
+          text-transform: uppercase !important;
         }
 
         .cl-formButtonPrimary:hover {
-          background-color: var(--accent-hover) !important;
+          background-color: #D6C9FF !important;
+          transform: translate(-2px, -2px) !important;
+          box-shadow: 6px 6px 0px #000000 !important;
+        }
+
+        .cl-formButtonPrimary:active {
+          transform: translate(1px, 1px) !important;
+          box-shadow: 1px 1px 0px #000000 !important;
         }
 
         .cl-footerActionText {
-          color: var(--text-muted) !important;
+          color: #222222 !important;
           font-size: var(--text-sm) !important;
+          font-weight: 600 !important;
         }
 
         .cl-footerActionLink {
-          color: var(--accent) !important;
-          font-weight: 600 !important;
+          color: #000000 !important;
+          font-weight: 900 !important;
           font-size: var(--text-sm) !important;
-          text-decoration: none !important;
+          text-decoration: underline !important;
           transition: color 0.2s ease !important;
         }
 
         .cl-footerActionLink:hover {
-          color: var(--accent-hover) !important;
+          color: #000000 !important;
           text-decoration: underline !important;
         }
 
         .cl-socialButtonsBlockButton {
-          border: 1px solid var(--border) !important;
-          background-color: var(--bg-card) !important;
-          color: var(--text-primary) !important;
-          border-radius: var(--border-radius) !important;
-          transition: background-color 0.2s ease !important;
+          border: 3px solid #000000 !important;
+          background-color: #FFFFFF !important;
+          color: #000000 !important;
+          border-radius: 4px !important;
+          box-shadow: 3px 3px 0px #000000 !important;
+          transition: transform 0.1s ease, box-shadow 0.1s ease !important;
         }
 
         .cl-socialButtonsBlockButton:hover {
-          background-color: var(--bg-active) !important;
+          transform: translate(-2px, -2px) !important;
+          box-shadow: 5px 5px 0px #000000 !important;
+          background-color: #D6C9FF !important;
         }
 
         .cl-socialButtonsBlockButtonText {
-          color: var(--text-primary) !important;
-          font-weight: 500 !important;
-        }
-
-        .cl-dividerText {
-          color: var(--text-muted) !important;
-          font-size: var(--text-xs) !important;
+          color: #000000 !important;
+          font-weight: 900 !important;
           text-transform: uppercase !important;
         }
 
+        .cl-dividerText {
+          color: #000000 !important;
+          font-size: var(--text-xs) !important;
+          text-transform: uppercase !important;
+          font-weight: 900 !important;
+        }
+
         .cl-dividerLine {
-          background-color: var(--border) !important;
+          background-color: #000000 !important;
+          height: 3px !important;
         }
 
         .cl-identityPreviewText {
-          color: var(--text-primary) !important;
+          color: #000000 !important;
+          font-weight: 600 !important;
         }
 
         .cl-identityPreviewEditButtonIcon {
-          color: var(--accent) !important;
+          color: #000000 !important;
         }
       `}</style>
     </ClerkProvider>

@@ -322,11 +322,12 @@ const Onboarding = ({ onOnboarded }) => {
           background-color: var(--bg-app);
           padding: 1.5rem;
           overflow-y: auto;
+          box-sizing: border-box;
         }
 
         .onboarding-card {
           background-color: var(--bg-card);
-          border: 1px solid var(--border);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
           padding: 2.5rem;
           width: 100%;
@@ -340,31 +341,36 @@ const Onboarding = ({ onOnboarded }) => {
         }
 
         .header-icon {
-          color: var(--accent);
+          color: var(--black);
           margin-bottom: 0.75rem;
         }
 
         .onboarding-title {
-          font-size: var(--text-xl);
-          font-weight: 700;
+          font-size: 2rem;
+          font-weight: 900;
           color: var(--text-primary);
           margin-bottom: 0.5rem;
+          text-transform: uppercase;
         }
 
         .onboarding-subtitle {
           font-size: var(--text-sm);
           color: var(--text-muted);
           line-height: 1.4;
+          font-weight: 600;
         }
 
         .error-alert {
-          background-color: var(--danger);
-          color: #FFFFFF;
+          background-color: var(--black);
+          color: var(--color);
+          border: 3px solid var(--black);
           padding: 0.75rem 1rem;
           border-radius: var(--border-radius);
           margin-bottom: 1.5rem;
           font-size: var(--text-sm);
-          font-weight: 500;
+          font-weight: 900;
+          box-shadow: 3px 3px 0px var(--black);
+          text-transform: uppercase;
         }
 
         .onboarding-form {
@@ -382,15 +388,16 @@ const Onboarding = ({ onOnboarded }) => {
         }
 
         .avatar-preview-container {
-          width: 90px;
-          height: 90px;
+          width: 100px;
+          height: 100px;
           border-radius: 50%;
-          border: 2px dashed var(--border);
+          border: 3px solid var(--black);
           display: flex;
           justify-content: center;
           align-items: center;
           overflow: hidden;
-          background-color: var(--bg-sidebar);
+          background-color: var(--white);
+          box-shadow: 3px 3px 0px var(--black);
         }
 
         .avatar-preview {
@@ -400,25 +407,29 @@ const Onboarding = ({ onOnboarded }) => {
         }
 
         .avatar-placeholder {
-          color: var(--text-muted);
+          color: var(--black);
         }
 
         .avatar-upload-btn {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          background-color: var(--bg-sidebar);
-          border: 1px solid var(--border);
+          background-color: var(--color);
+          border: 3px solid var(--black);
           border-radius: var(--border-radius);
           padding: 0.5rem 1rem;
           font-size: var(--text-sm);
-          font-weight: 500;
+          font-weight: 900;
           cursor: pointer;
-          transition: background-color 0.2s ease;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          box-shadow: 3px 3px 0px var(--black);
+          text-transform: uppercase;
         }
 
         .avatar-upload-btn:hover {
-          background-color: var(--bg-active);
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px var(--black);
+          background-color: var(--color);
         }
 
         .form-group {
@@ -432,13 +443,15 @@ const Onboarding = ({ onOnboarded }) => {
           align-items: center;
           gap: 0.5rem;
           font-size: var(--text-sm);
-          font-weight: 600;
+          font-weight: 900;
           color: var(--text-secondary);
+          text-transform: uppercase;
         }
 
         .form-tip {
           font-size: var(--text-xs);
           color: var(--text-muted);
+          font-weight: 600;
         }
 
         .button-group {
@@ -450,17 +463,21 @@ const Onboarding = ({ onOnboarded }) => {
         }
 
         .btn-logout {
-          background-color: transparent;
-          border: 1px solid var(--border);
-          color: var(--text-primary);
+          background-color: var(--white);
+          border: 3px solid var(--black);
+          color: var(--black);
           padding: 0.75rem 1.5rem;
           border-radius: var(--border-radius);
-          font-weight: 600;
-          transition: background-color 0.2s ease;
+          font-weight: 900;
+          box-shadow: 3px 3px 0px var(--black);
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          text-transform: uppercase;
         }
 
         .btn-logout:hover {
-          background-color: var(--bg-sidebar);
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px var(--black);
+          background-color: var(--color);
         }
 
         .onboarding-form textarea {
@@ -474,7 +491,7 @@ const Onboarding = ({ onOnboarded }) => {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: rgba(0, 0, 0, 0.75);
+          background-color: rgba(0, 0, 0, 0.8);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -484,11 +501,11 @@ const Onboarding = ({ onOnboarded }) => {
 
         .crop-modal {
           background-color: var(--bg-card);
-          border: 1px solid var(--border);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
-          padding: 1.75rem;
+          padding: 2rem;
           width: 100%;
-          max-width: 360px;
+          max-width: 380px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -498,9 +515,10 @@ const Onboarding = ({ onOnboarded }) => {
 
         .crop-modal-title {
           font-size: var(--text-base);
-          font-weight: 700;
+          font-weight: 900;
           color: var(--text-primary);
           margin: 0;
+          text-transform: uppercase;
         }
 
         .crop-modal-desc {
@@ -508,16 +526,17 @@ const Onboarding = ({ onOnboarded }) => {
           color: var(--text-muted);
           text-align: center;
           margin: 0;
+          font-weight: 600;
         }
 
         .crop-canvas-wrapper {
           position: relative;
           width: 300px;
           height: 300px;
-          border-radius: 8px;
           overflow: hidden;
-          background-color: #000;
-          border: 1px solid var(--border);
+          background-color: #000000;
+          border: 3px solid var(--border);
+          box-shadow: 4px 4px 0px var(--black);
         }
 
         .crop-canvas-wrapper canvas {
@@ -531,10 +550,10 @@ const Onboarding = ({ onOnboarded }) => {
           left: 0;
           right: 0;
           bottom: 0;
-          border: 2px solid var(--accent);
+          border: 3px dashed var(--color);
           pointer-events: none;
           box-sizing: border-box;
-          box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
         }
 
         .crop-slider-container {
@@ -547,14 +566,20 @@ const Onboarding = ({ onOnboarded }) => {
 
         .slider-label {
           font-size: var(--text-xs);
-          font-weight: 600;
+          font-weight: 900;
           color: var(--text-secondary);
+          text-transform: uppercase;
         }
 
         .crop-slider-container input[type="range"] {
           flex: 1;
-          accent-color: var(--accent);
+          accent-color: var(--black);
           cursor: pointer;
+          outline: none;
+          height: 8px;
+          background: #EFEFEF;
+          border: 2px solid #000000;
+          border-radius: 4px;
         }
 
         .crop-modal-actions {
@@ -565,33 +590,36 @@ const Onboarding = ({ onOnboarded }) => {
 
         .crop-btn-cancel, .crop-btn-apply {
           flex: 1;
-          padding: 0.6rem 1rem;
+          padding: 0.75rem 1rem;
           font-size: var(--text-sm);
-          font-weight: 600;
+          font-weight: 900;
           border-radius: var(--border-radius);
           cursor: pointer;
           text-align: center;
-          transition: background-color 0.2s ease;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          text-transform: uppercase;
+          box-shadow: 3px 3px 0px var(--black);
+          border: 3px solid var(--black);
         }
 
         .crop-btn-cancel {
-          background-color: transparent;
-          border: 1px solid var(--border);
-          color: var(--text-primary);
+          background-color: var(--white);
+          color: var(--black);
         }
 
         .crop-btn-cancel:hover {
-          background-color: var(--bg-sidebar);
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px var(--black);
         }
 
         .crop-btn-apply {
-          background-color: var(--accent);
-          color: #FFFFFF;
-          border: none;
+          background-color: var(--color);
+          color: var(--black);
         }
 
         .crop-btn-apply:hover {
-          background-color: var(--accent-hover);
+          transform: translate(2px, 2px);
+          box-shadow: 2px 2px 0px var(--black);
         }
       `}</style>
     </div>

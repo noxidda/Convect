@@ -101,7 +101,6 @@ const Signup = () => {
               <div className="form-group">
                 <label htmlFor="email">Email Address</label>
                 <div className="input-icon-wrapper">
-                  <Mail size={18} className="input-icon" />
                   <input
                     id="email"
                     type="email"
@@ -111,13 +110,13 @@ const Signup = () => {
                     required
                     disabled={loading}
                   />
+                  <Mail size={18} className="input-icon" />
                 </div>
               </div>
 
               <div className="form-group">
                 <label htmlFor="password">Password</label>
                 <div className="input-icon-wrapper">
-                  <Lock size={18} className="input-icon" />
                   <input
                     id="password"
                     type="password"
@@ -127,6 +126,7 @@ const Signup = () => {
                     required
                     disabled={loading}
                   />
+                  <Lock size={18} className="input-icon" />
                 </div>
               </div>
 
@@ -152,7 +152,6 @@ const Signup = () => {
                   We sent a 6-digit verification code to <strong>{email}</strong>.
                 </p>
                 <div className="input-icon-wrapper">
-                  <KeyRound size={18} className="input-icon" />
                   <input
                     id="code"
                     type="text"
@@ -164,6 +163,7 @@ const Signup = () => {
                     disabled={loading}
                     style={{ letterSpacing: '0.2em', textAlign: 'center', fontWeight: 'bold' }}
                   />
+                  <KeyRound size={18} className="input-icon" />
                 </div>
               </div>
 
@@ -345,6 +345,7 @@ const Signup = () => {
           left: 14px;
           color: var(--darker-white);
           pointer-events: none;
+          z-index: 2;
         }
 
         .input-icon-wrapper input {

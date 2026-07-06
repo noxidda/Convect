@@ -1,6 +1,7 @@
 import express from 'express';
 import User from '../models/User.js';
 import FriendRequest from '../models/FriendRequest.js';
+import Conversation from '../models/Conversation.js';
 import { requireAuth } from '../middleware/auth.js';
 import { sendToUser } from '../socket.js';
 
@@ -69,6 +70,17 @@ router.post('/request', requireAuth, async (req, res) => {
       if (!recipient.friends.includes(currentUserId)) {
         recipient.friends.push(currentUserId);
         await recipient.save();
+      }
+
+      // Automatically create conversation document so they appear in Chats list
+      let conversation = await Conversation.findOne({
+        participants: { $all: [currentUserId, recipientId] }
+      });
+      if (!conversation) {
+        conversation = new Conversation({
+          participants: [currentUserId, recipientId],
+        });
+        await conversation.save();
       }
 
       // Notify recipient
@@ -165,6 +177,17 @@ router.post('/accept', requireAuth, async (req, res) => {
     if (!sender.friends.includes(currentUserId)) {
       sender.friends.push(currentUserId);
       await sender.save();
+    }
+
+    // Automatically create conversation document so they appear in Chats list
+    let conversation = await Conversation.findOne({
+      participants: { $all: [currentUserId, request.sender] }
+    });
+    if (!conversation) {
+      conversation = new Conversation({
+        participants: [currentUserId, request.sender],
+      });
+      await conversation.save();
     }
 
     // Send real-time notification to request sender that their request was accepted

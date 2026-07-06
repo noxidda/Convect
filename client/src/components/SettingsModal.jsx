@@ -3,6 +3,16 @@ import { useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
 import { X, User, FileText, Sun, Moon, Trash2, Camera, Check } from 'lucide-react';
 
+const THEME_COLORS = [
+  { name: 'Red', hex: '#FFC5C5' },
+  { name: 'Pink', hex: '#FFC6FF' },
+  { name: 'Blue', hex: '#CAEAFF' },
+  { name: 'Yellow', hex: '#FDFFB6' },
+  { name: 'Green', hex: '#CAFFBF' },
+  { name: 'Purple', hex: '#D6C9FF' },
+  { name: 'Indigo', hex: '#C1D3FF' }
+];
+
 const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
   const { signOut } = useClerk();
   const [bio, setBio] = useState(currentUser.bio || '');
@@ -11,6 +21,9 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [activeColor, setActiveColor] = useState(() => {
+    return localStorage.getItem('convect-theme-color') || '#D6C9FF';
+  });
 
   // Cropping States
   const [cropImageObj, setCropImageObj] = useState(null);
@@ -235,6 +248,29 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
               />
             </div>
 
+            {/* Theme Color Section */}
+            <div className="settings-group">
+              <label className="settings-label" style={{ textTransform: 'uppercase', fontWeight: 900 }}>
+                Theme Color
+              </label>
+              <div className="theme-color-picker-grid">
+                {THEME_COLORS.map((color) => (
+                  <button
+                    key={color.name}
+                    type="button"
+                    className={`theme-color-option-btn ${activeColor === color.hex ? 'active' : ''}`}
+                    style={{ backgroundColor: color.hex }}
+                    onClick={() => {
+                      setActiveColor(color.hex);
+                      localStorage.setItem('convect-theme-color', color.hex);
+                      document.documentElement.style.setProperty('--color', color.hex);
+                    }}
+                    title={color.name}
+                  />
+                ))}
+              </div>
+            </div>
+
 
 
             <div className="settings-action-buttons">
@@ -252,10 +288,6 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
           {/* Delete Account Section */}
           <div className="delete-account-section">
-            <h3 className="delete-title">Danger Zone</h3>
-            <p className="delete-desc">
-              Once you delete your account, there is no going back. All messages and chat history will be deleted.
-            </p>
             <button
               type="button"
               className="btn-danger delete-btn"
@@ -264,6 +296,9 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
             >
               <Trash2 size={16} /> {deleting ? 'Deleting Account...' : 'Delete Account'}
             </button>
+            <p className="delete-desc">
+              Once you delete your account, there is no going back. All messages and chat history will be deleted.
+            </p>
           </div>
         </div>
       </div>
@@ -327,7 +362,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: rgba(0, 0, 0, 0.5);
+          background-color: rgba(0, 0, 0, 0.8);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -337,7 +372,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         .settings-modal {
           background-color: var(--bg-card);
-          border: 1px solid var(--border);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
           width: 100%;
           max-width: 460px;
@@ -353,24 +388,33 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           justify-content: space-between;
           align-items: center;
           padding: 1.25rem 1.5rem;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 3px solid var(--border);
         }
 
         .modal-title {
           font-size: var(--text-lg);
-          font-weight: 700;
+          font-weight: 900;
           color: var(--text-primary);
+          text-transform: uppercase;
         }
 
         .close-btn {
-          color: var(--text-muted);
-          transition: color 0.2s ease;
+          color: var(--black);
           display: flex;
           align-items: center;
+          background-color: var(--white);
+          border: 3px solid var(--black);
+          padding: 0.25rem;
+          border-radius: var(--border-radius);
+          box-shadow: 2px 2px 0px var(--black);
+          cursor: pointer;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .close-btn:hover {
-          color: var(--text-primary);
+          transform: translate(2px, 2px);
+          box-shadow: 1px 1px 0px var(--black);
+          background-color: var(--color);
         }
 
         .modal-body {
@@ -382,26 +426,32 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
         }
 
         .modal-error {
-          background-color: var(--danger);
-          color: #FFFFFF;
+          background-color: var(--black);
+          color: var(--color);
+          border: 3px solid var(--black);
           padding: 0.75rem 1rem;
           margin: 1rem 1.5rem 0 1.5rem;
           border-radius: var(--border-radius);
           font-size: var(--text-sm);
-          font-weight: 500;
+          font-weight: 900;
+          box-shadow: 3px 3px 0px var(--black);
+          text-transform: uppercase;
         }
 
         .modal-success {
-          background-color: var(--accent);
-          color: #000000;
+          background-color: var(--color);
+          color: var(--black);
+          border: 3px solid var(--black);
           padding: 0.75rem 1rem;
           margin: 1rem 1.5rem 0 1.5rem;
           border-radius: var(--border-radius);
           font-size: var(--text-sm);
-          font-weight: 600;
+          font-weight: 900;
           display: flex;
           align-items: center;
           gap: 0.5rem;
+          box-shadow: 3px 3px 0px var(--black);
+          text-transform: uppercase;
         }
 
         .settings-form {
@@ -423,11 +473,12 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           width: 80px;
           height: 80px;
           border-radius: 50%;
-          border: 2px solid var(--border);
-          background-color: var(--bg-sidebar);
+          border: 3px solid var(--border);
+          background-color: var(--white);
           display: flex;
           justify-content: center;
           align-items: center;
+          box-shadow: 3px 3px 0px var(--black);
         }
 
         .settings-photo {
@@ -438,33 +489,37 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
         }
 
         .settings-photo-placeholder {
-          color: var(--text-muted);
+          color: var(--black);
         }
 
         .photo-edit-badge {
           position: absolute;
           bottom: 0;
           right: 0;
-          background-color: var(--accent);
+          background-color: var(--color);
           color: #000000;
-          width: 24px;
-          height: 24px;
+          width: 26px;
+          height: 26px;
           border-radius: 50%;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          border: 2px solid var(--bg-card);
-          transition: background-color 0.2s ease;
+          border: 3px solid var(--black);
+          box-shadow: 1px 1px 0px var(--black);
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .photo-edit-badge:hover {
-          background-color: var(--accent-hover);
+          transform: translate(1px, 1px);
+          box-shadow: 2px 2px 0px var(--black);
+          background-color: var(--white);
         }
 
         .settings-username-display {
-          font-weight: 600;
-          color: var(--text-secondary);
+          font-weight: 900;
+          color: var(--black);
+          text-transform: uppercase;
         }
 
         .settings-group {
@@ -478,15 +533,14 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           align-items: center;
           gap: 0.5rem;
           font-size: var(--text-sm);
-          font-weight: 600;
+          font-weight: 900;
           color: var(--text-secondary);
+          text-transform: uppercase;
         }
 
         .settings-form textarea {
           resize: none;
         }
-
-
 
         .settings-action-buttons {
           margin-top: 0.5rem;
@@ -498,7 +552,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         .modal-divider {
           border: 0;
-          border-top: 1px solid var(--border);
+          border-top: 3px solid var(--border);
           margin: 0.5rem 0;
         }
 
@@ -508,16 +562,11 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           gap: 0.5rem;
         }
 
-        .delete-title {
-          font-size: var(--text-base);
-          font-weight: 700;
-          color: var(--danger);
-        }
-
         .delete-desc {
           font-size: var(--text-xs);
           color: var(--text-muted);
           line-height: 1.4;
+          font-weight: 600;
         }
 
         .delete-btn {
@@ -535,7 +584,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: rgba(0, 0, 0, 0.75);
+          background-color: rgba(0, 0, 0, 0.8);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -545,11 +594,11 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         .crop-modal {
           background-color: var(--bg-card);
-          border: 1px solid var(--border);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
-          padding: 1.75rem;
+          padding: 2rem;
           width: 100%;
-          max-width: 360px;
+          max-width: 380px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -559,9 +608,10 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         .crop-modal-title {
           font-size: var(--text-base);
-          font-weight: 700;
+          font-weight: 900;
           color: var(--text-primary);
           margin: 0;
+          text-transform: uppercase;
         }
 
         .crop-modal-desc {
@@ -569,16 +619,17 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           color: var(--text-muted);
           text-align: center;
           margin: 0;
+          font-weight: 600;
         }
 
         .crop-canvas-wrapper {
           position: relative;
           width: 300px;
           height: 300px;
-          border-radius: 8px;
           overflow: hidden;
-          background-color: #000;
-          border: 1px solid var(--border);
+          background-color: #000000;
+          border: 3px solid var(--border);
+          box-shadow: 4px 4px 0px var(--black);
         }
 
         .crop-canvas-wrapper canvas {
@@ -592,10 +643,10 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           left: 0;
           right: 0;
           bottom: 0;
-          border: 2px solid var(--accent);
+          border: 3px dashed var(--color);
           pointer-events: none;
           box-sizing: border-box;
-          box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
         }
 
         .crop-slider-container {
@@ -608,14 +659,20 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         .slider-label {
           font-size: var(--text-xs);
-          font-weight: 600;
+          font-weight: 900;
           color: var(--text-secondary);
+          text-transform: uppercase;
         }
 
         .crop-slider-container input[type="range"] {
           flex: 1;
-          accent-color: var(--accent);
+          accent-color: var(--black);
           cursor: pointer;
+          outline: none;
+          height: 8px;
+          background: #EFEFEF;
+          border: 2px solid #000000;
+          border-radius: var(--border-radius);
         }
 
         .crop-modal-actions {
@@ -626,33 +683,69 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
 
         .crop-btn-cancel, .crop-btn-apply {
           flex: 1;
-          padding: 0.6rem 1rem;
+          padding: 0.75rem 1rem;
           font-size: var(--text-sm);
-          font-weight: 600;
+          font-weight: 900;
           border-radius: var(--border-radius);
           cursor: pointer;
           text-align: center;
-          transition: background-color 0.2s ease;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          text-transform: uppercase;
+          box-shadow: 3px 3px 0px var(--black);
+          border: 3px solid var(--black);
         }
 
         .crop-btn-cancel {
-          background-color: transparent;
-          border: 1px solid var(--border);
-          color: var(--text-primary);
+          background-color: var(--white);
+          color: var(--black);
         }
 
         .crop-btn-cancel:hover {
-          background-color: var(--bg-sidebar);
+          transform: translate(2px, 2px);
+          box-shadow: 1px 1px 0px var(--black);
+          background-color: var(--color);
         }
 
         .crop-btn-apply {
-          background-color: var(--accent);
-          color: #000000;
-          border: none;
+          background-color: var(--color);
+          color: var(--black);
         }
 
         .crop-btn-apply:hover {
-          background-color: var(--accent-hover);
+          transform: translate(2px, 2px);
+          box-shadow: 1px 1px 0px var(--black);
+          background-color: var(--white);
+        }
+
+        /* Theme color picker styling */
+        .theme-color-picker-grid {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+          margin-top: 0.25rem;
+        }
+
+        .theme-color-option-btn {
+          width: 38px;
+          height: 38px;
+          border-radius: 50%;
+          border: 3px solid #000000;
+          cursor: pointer;
+          position: relative;
+          box-shadow: 2px 2px 0px #000000;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .theme-color-option-btn:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 3px 3px 0px #000000;
+        }
+
+        .theme-color-option-btn.active {
+          transform: translate(1px, 1px);
+          box-shadow: none;
+          outline: 3px solid var(--black);
+          outline-offset: 2px;
         }
       `}</style>
     </div>

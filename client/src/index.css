@@ -1,47 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
 
 :root {
   /* Fonts */
-  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Custom Black and White Palette */
+  /* Colors */
+  --color: #c680ff;
   --black: #000000;
-  --off-black: #111111;
-  --dark-gray: #222222;
-  --medium-gray: #555555;
-  --light-gray: #888888;
-  --lighter-gray: #aaaaaa;
-  --dark-white: #b4b4b4;
-  --darker-white: #dadada;
-  --white: #ffffff;
+  --white: #FFFFFF;
+  --gray-dark: #222222;
+  --gray-light: #F0F0F0;
 
-  /* Theme mappings (Subtle Borders, High Legibility) */
-  --bg-app: var(--off-black);         /* Chat Window Background (#111111) */
-  --bg-sidebar: var(--black);         /* Sidebar Background (#000000) */
-  --bg-active: var(--dark-gray);      /* Sidebar Selected Item (#222222) */
-  --bg-card: var(--black);            /* Cards / Modals (#000000) */
-  --bg-bubble-self: var(--white);     /* Self Bubble (#ffffff) */
-  --bg-bubble-other: var(--dark-gray); /* Other Bubble (#222222) */
-  --accent: var(--white);             /* Accent White (#ffffff) */
-  --accent-hover: rgba(255, 255, 255, 0.85); /* Accent Hover White */
+  /* Theme mappings (Neo-Brutalism Contrast) */
+  --bg-app: var(--color);
+  --bg-sidebar: var(--white);
+  --bg-card: var(--white);
+  --bg-active: var(--color);
+  --bg-header: var(--black);
   
-  --text-primary: var(--white);
-  --text-secondary: var(--light-gray);
-  --text-muted: rgba(255, 255, 255, 0.4);
-  --border: rgba(255, 255, 255, 0.15); /* Subtle white borders */
-  --danger: #FF3B30;
+  --accent: var(--color);
+  --accent-hover: var(--white);
+  
+  --text-primary: var(--black);
+  --text-secondary: var(--black);
+  --text-muted: var(--gray-dark);
+  
+  /* Contrast borders */
+  --border: var(--black);
+  --border-width: 3px;
+  --border-radius: 10px;
+  
+  /* Hard drop shadows */
+  --shadow-sm: 3px 3px 0px var(--black);
+  --shadow-md: 6px 6px 0px var(--black);
+  --shadow-lg: 10px 10px 0px var(--black);
 
-  /* Typography Sizes */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-
-  /* Layout & Borders */
-  --border-radius: 8px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  /* Header Height */
+  --header-height: 80px;
 }
 
 * {
@@ -56,51 +51,75 @@ body {
   color: var(--text-primary);
   height: 100vh;
   overflow: hidden;
-  font-size: var(--text-base);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #root {
   height: 100%;
 }
 
-/* Scrollbar styles */
+/* Scrollbars - stark black/white */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--white);
+  border-left: var(--border-width) solid var(--black);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: var(--border-radius);
+  background: var(--black);
+  border-left: 3px solid var(--black);
+  border-right: 3px solid var(--black);
+  border-top: none;
+  border-bottom: none;
+  cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent);
+  background: var(--black);
+  border-left: 3px solid var(--black);
+  border-right: 3px solid var(--black);
+  border-top: none;
+  border-bottom: none;
+  cursor: pointer;
 }
 
-/* Global Elements styling */
+::selection {
+  background: var(--black);
+  color: var(--color);
+}
+
+/* Form inputs & boxes */
 button, input, textarea, select {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
   outline: none;
+  font-weight: 700;
 }
 
 input, textarea, select {
-  background-color: var(--bg-app);
-  border: 1px solid var(--border);
+  background-color: var(--white);
+  border: var(--border-width) solid var(--black);
   padding: 0.75rem 1rem;
   border-radius: var(--border-radius);
-  color: var(--text-primary);
+  color: var(--black);
   width: 100%;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: var(--accent);
+  background-color: var(--color);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-md);
 }
 
 button {
@@ -109,50 +128,97 @@ button {
   background: none;
 }
 
-/* Common Classes */
-.btn-primary {
-  background-color: var(--accent);
-  color: var(--bg-sidebar);
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  text-align: center;
-  /* Hover effects: change bg color only, NO x or y movement */
-  transition: background-color 0.2s ease, opacity 0.2s ease;
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--black);
+  line-height: 1.1;
+  text-transform: uppercase;
 }
 
-.btn-primary:hover {
-  background-color: var(--accent-hover);
+/* Common Brutalist Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color);
+  color: var(--black);
+  padding: 0.75rem 1.5rem;
+  border: var(--border-width) solid var(--black);
+  border-radius: var(--border-radius);
+  font-weight: 900;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  text-transform: uppercase;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--black);
+  background-color: var(--color);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: none;
 }
 
 .btn-primary:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
+/* Danger Button (Brutalist Black/White layout) */
 .btn-danger {
-  background-color: var(--danger);
-  color: #FFFFFF;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--black);
+  color: var(--white);
   padding: 0.75rem 1.5rem;
+  border: var(--border-width) solid var(--black);
   border-radius: var(--border-radius);
-  font-weight: 600;
+  font-weight: 900;
   text-align: center;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
+  text-transform: uppercase;
 }
 
-.btn-danger:hover {
-  opacity: 0.9;
+.btn-danger:hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--black);
+  background-color: var(--white);
+  color: var(--black);
 }
 
-/* Hover effect rule: no translations */
+.btn-danger:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Hover active items */
 .hover-item {
-  transition: background-color 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.1s ease, transform 0.1s ease;
 }
 .hover-item:hover {
-  background-color: var(--bg-active);
+  background-color: var(--color) !important;
+  color: var(--black) !important;
 }
 
-/* Glassmorphism/Modern container styles */
+/* Global layouts */
 .app-container {
   display: flex;
   height: 100vh;
@@ -161,8 +227,8 @@ button {
 }
 
 .auth-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border);
+  background-color: var(--white);
+  border: var(--border-width) solid var(--black);
   border-radius: var(--border-radius);
   padding: 2.5rem;
   width: 100%;
@@ -170,14 +236,13 @@ button {
   box-shadow: var(--shadow-md);
 }
 
-/* Typography Helpers */
 .title {
-  font-size: var(--text-xl);
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 900;
   margin-bottom: 0.5rem;
 }
 
 .subtitle {
-  font-size: var(--text-sm);
+  font-size: 0.875rem;
   color: var(--text-muted);
 }
