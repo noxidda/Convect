@@ -46,7 +46,9 @@ export const requireAuth = async (req, res, next) => {
       return res.status(401).json({ error: "Unauthorized: No token provided" });
     }
 
-    const decoded = await verifyToken(token);
+    const decoded = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY,
+    });
     req.auth = { userId: decoded.sub };
     next();
   } catch (err) {
