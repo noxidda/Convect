@@ -202,15 +202,15 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
             <h3 className="header-username">{contact.username}</h3>
             <span className="header-status">
               {contact.isBlocked ? (
-                'Blocked'
+                'blocked'
               ) : contact.hasBlockedMe ? (
-                'Offline'
+                'offline'
               ) : isTyping ? (
                 <span className="typing-indicator">typing...</span>
               ) : isOnline ? (
-                'Online'
+                'online'
               ) : (
-                'Offline'
+                'offline'
               )}
             </span>
           </div>
@@ -266,11 +266,6 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
                     <div className="message-meta">
                       <span className="msg-time">{formatTime(msg.createdAt)}</span>
                       {msg.isEdited && !isMsgDeleted && <span className="msg-edited-tag">edited</span>}
-                      {isSelf && !isMsgDeleted && (
-                        <span className={`msg-status-tick ${msg.isRead ? 'read' : 'sent'}`}>
-                          {msg.isRead ? ' ✓✓' : ' ✓'}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -411,10 +406,10 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
         }
 
         .header-status {
-          font-size: var(--text-xs);
+          font-size: 0.72rem;
           color: var(--text-muted);
           font-weight: 500;
-          text-transform: uppercase;
+          text-transform: lowercase;
         }
 
         .typing-indicator {

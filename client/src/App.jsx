@@ -6,6 +6,7 @@ import Onboarding from './pages/Onboarding';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Landing from './pages/Landing';
 import axios from 'axios';
 
 // get clerk publishable
@@ -168,37 +169,42 @@ const AppContent = () => {
     );
   }
 
-  // not signed in
-  if (!isSignedIn) {
-    return (
-      <div className="auth-container">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </div>
-    );
-  }
-
-  // signed in, but
-  if (dbUser && !dbUser.username) {
-    return (
-      <AxiosAuthInterceptor>
-        <Routes>
-          <Route path="/onboarding" element={<Onboarding onOnboarded={(updated) => setDbUser(updated)} />} />
-          <Route path="*" element={<Navigate to="/onboarding" replace />} />
-        </Routes>
-      </AxiosAuthInterceptor>
-    );
-  }
-
-  // signed in and
+  // unified routing
   return (
     <AxiosAuthInterceptor>
       <SocketProvider>
         <Routes>
-          <Route path="/" element={<Dashboard dbUser={dbUser} />} />
+          {/* Public Landing page */}
+          <Route path="/" element={<Landing />} />
+          
+          {/* Auth routes */}
+          <Route path="/login" element={!isSignedIn ? <Login /> : <Navigate to="/dashboard" replace />} />
+          <Route path="/signup" element={!isSignedIn ? <Signup /> : <Navigate to="/dashboard" replace />} />
+          
+          {/* Protected routes */}
+          <Route 
+            path="/onboarding" 
+            element={
+              isSignedIn ? (
+                dbUser && dbUser.username ? <Navigate to="/dashboard" replace /> : <Onboarding onOnboarded={(updated) => setDbUser(updated)} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+          
+          <Route 
+            path="/dashboard" 
+            element={
+              isSignedIn ? (
+                dbUser && !dbUser.username ? <Navigate to="/onboarding" replace /> : <Dashboard dbUser={dbUser} />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+
+          {/* Wildcard redirect */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </SocketProvider>

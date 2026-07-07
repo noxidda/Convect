@@ -66,6 +66,17 @@ export const SocketProvider = ({ children }) => {
           });
         });
 
+        // listen for initial online users
+        newSocket.on('initial_online_users', (userIds) => {
+          setOnlineUsers((prev) => {
+            const next = new Map(prev);
+            userIds.forEach((id) => {
+              next.set(id, 'online');
+            });
+            return next;
+          });
+        });
+
         // listen for typing
         newSocket.on('typing_status', ({ chatId, userId, isTyping }) => {
           setTypingUsers((prev) => {

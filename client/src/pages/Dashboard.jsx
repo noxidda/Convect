@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useClerk } from '@clerk/clerk-react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
 import ChatWindow from '../components/ChatWindow';
@@ -399,8 +400,9 @@ const Dashboard = ({ dbUser }) => {
       {/* top header banner */}
       <div className="dashboard-top-header">
         <div className="header-logo-section">
-          <h1 className="app-logo-text">CONVECT</h1>
-          
+          <Link to="/" className="header-logo-link">
+            <h1 className="app-logo-text">CONVECT</h1>
+          </Link>
         </div>
         <div className="header-self-profile">
           <div className="header-controls">
@@ -1092,6 +1094,13 @@ const Dashboard = ({ dbUser }) => {
           display: flex;
           align-items: center;
           gap: 0.75rem;
+        }
+
+        .header-logo-link {
+          text-decoration: none;
+          color: inherit;
+          display: flex;
+          align-items: center;
         }
 
         .app-logo-text {

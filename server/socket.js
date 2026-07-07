@@ -73,6 +73,10 @@ export const initSocket = (httpServer) => {
         status: 'online',
       });
 
+      // send initial online users to the newly connected user
+      const onlineUserIds = Array.from(userSockets.keys());
+      socket.emit('initial_online_users', onlineUserIds);
+
       // join standard rooms
       socket.on('join_room', (chatId) => {
         socket.join(chatId);
