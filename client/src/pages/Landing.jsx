@@ -43,7 +43,7 @@ const Landing = () => {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-content">
-            <h1 className="hero-title">STARK. FAST.<br />MINIMAL CHAT.</h1>
+            <h1 className="hero-title">EASY. FAST.<br />MINIMAL CHAT.</h1>
             <p className="hero-tagline">
               Convect is a lightweight, real-time communication platform designed for fast conversations and keyboard-first navigation.
             </p>

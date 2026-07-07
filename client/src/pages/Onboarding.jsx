@@ -10,7 +10,7 @@ const Onboarding = ({ onOnboarded }) => {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('Hey there! I am using this chat app.');
+  const [bio, setBio] = useState('Hello! :)');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -218,7 +218,7 @@ const Onboarding = ({ onOnboarded }) => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-              placeholder="e.g. johndoe"
+              placeholder=" "
               required
               minLength={3}
               maxLength={30}
