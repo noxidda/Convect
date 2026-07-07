@@ -1,0 +1,13 @@
+{
+  "name": "convect-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Root workspace workspace runner for Convect MERN & Tauri application",
+  "scripts": {
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "desktop": "npx @tauri-apps/cli dev",
+    "build:client": "npm run build --prefix client",
+    "build:desktop": "npx @tauri-apps/cli build"
+  }
+}
