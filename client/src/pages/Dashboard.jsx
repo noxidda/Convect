@@ -792,6 +792,8 @@ const Dashboard = ({ dbUser }) => {
           onProfileUpdated={(updated) => {
             setCurrentUser(updated);
           }}
+          onBlockToggle={handleBlockToggle}
+          onRestrictToggle={handleRestrictToggle}
         />
       )}
 

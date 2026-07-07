@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useSocket } from '../context/SocketContext';
-import { Send, UserMinus } from 'lucide-react';
+import { Send, UserMinus, ShieldAlert, Ban } from 'lucide-react';
 
-const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend }) => {
+const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend, onBlockToggle, onRestrictToggle }) => {
   const { socket, connected, onlineUsers, typingUsers, emitTyping, joinChat, leaveChat } = useSocket();
   
   const [messages, setMessages] = useState([]);
@@ -195,7 +195,21 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
           </div>
         </div>
 
-        <div className="chat-header-right">
+        <div className="chat-header-right" style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            className={`restrict-header-btn hover-item ${contact.isRestricted ? 'active' : ''}`} 
+            onClick={() => onRestrictToggle(contactId, contact.isRestricted)}
+            title={contact.isRestricted ? "Unrestrict User" : "Restrict User"}
+          >
+            <ShieldAlert size={18} />
+          </button>
+          <button 
+            className={`block-header-btn hover-item ${contact.isBlocked ? 'active' : ''}`} 
+            onClick={() => onBlockToggle(contactId, contact.isBlocked)}
+            title={contact.isBlocked ? "Unblock User" : "Block User"}
+          >
+            <Ban size={18} />
+          </button>
           <button 
             className="unfriend-header-btn hover-item" 
             onClick={() => onRemoveFriend(contactId)}
@@ -644,7 +658,9 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
           to { transform: scale(1); opacity: 1; }
         }
 
-        .unfriend-header-btn {
+        .unfriend-header-btn,
+        .restrict-header-btn,
+        .block-header-btn {
           color: var(--black);
           padding: 0.5rem;
           border-radius: var(--border-radius);
@@ -658,15 +674,27 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend 
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
-        .unfriend-header-btn:hover {
+        .unfriend-header-btn:hover,
+        .restrict-header-btn:hover,
+        .block-header-btn:hover {
           transform: translate(2px, 2px);
           box-shadow: 1px 1px 0px var(--black);
           background-color: var(--color);
         }
 
-        .unfriend-header-btn:active {
+        .unfriend-header-btn:active,
+        .restrict-header-btn:active,
+        .block-header-btn:active {
           transform: translate(3px, 3px);
           box-shadow: none;
+        }
+
+        .restrict-header-btn.active {
+          background-color: #ffd8a8;
+        }
+
+        .block-header-btn.active {
+          background-color: #ffc5c5;
         }
       `}</style>
 

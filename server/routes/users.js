@@ -13,7 +13,9 @@ router.post('/sync', requireAuth, async (req, res) => {
   const { username, bio, profilePhoto } = req.body;
 
   try {
-    let user = await User.findOne({ clerkId });
+    let user = await User.findOne({ clerkId })
+      .populate('blockedUsers', '_id username profilePhoto bio')
+      .populate('restrictedUsers', '_id username profilePhoto bio');
     if (!user) {
       // check if username
       let finalUsername = username;
@@ -25,13 +27,17 @@ router.post('/sync', requireAuth, async (req, res) => {
         }
       }
 
-      user = new User({
+      const newUser = new User({
         clerkId,
         username: finalUsername || null, // allow null initially,
         bio: bio || 'Hey there! I am using this chat app.',
         profilePhoto: profilePhoto || '',
       });
-      await user.save();
+      await newUser.save();
+
+      user = await User.findById(newUser._id)
+        .populate('blockedUsers', '_id username profilePhoto bio')
+        .populate('restrictedUsers', '_id username profilePhoto bio');
       console.log(`Created new MongoDB profile for clerkId: ${clerkId}`);
     }
 
@@ -45,7 +51,9 @@ router.post('/sync', requireAuth, async (req, res) => {
 // 2. get user
 router.get('/profile', requireAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ clerkId: req.auth.userId });
+    const user = await User.findOne({ clerkId: req.auth.userId })
+      .populate('blockedUsers', '_id username profilePhoto bio')
+      .populate('restrictedUsers', '_id username profilePhoto bio');
     if (!user) {
       return res.status(404).json({ error: 'User profile not found' });
     }
@@ -92,7 +100,11 @@ router.put('/profile', requireAuth, async (req, res) => {
     }
 
     await user.save();
-    res.json(user);
+
+    const populatedUser = await User.findById(user._id)
+      .populate('blockedUsers', '_id username profilePhoto bio')
+      .populate('restrictedUsers', '_id username profilePhoto bio');
+    res.json(populatedUser);
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ error: 'Server error' });

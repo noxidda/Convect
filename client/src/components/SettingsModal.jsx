@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
-import { X, User, FileText, Sun, Moon, Trash2, Camera, Check } from 'lucide-react';
+import { X, User, FileText, Sun, Moon, Trash2, Camera, Check, ShieldAlert, Ban } from 'lucide-react';
 
 const THEME_COLORS = [
   { name: 'Red', hex: '#FFC5C5' },
@@ -13,7 +13,7 @@ const THEME_COLORS = [
   { name: 'Indigo', hex: '#C1D3FF' }
 ];
 
-const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
+const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, onRestrictToggle }) => {
   const { signOut } = useClerk();
   const [bio, setBio] = useState(currentUser.bio || '');
   const [photoUrl, setPhotoUrl] = useState(currentUser.profilePhoto || '');
@@ -24,6 +24,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
   const [activeColor, setActiveColor] = useState(() => {
     return localStorage.getItem('convect-theme-color') || '#D6C9FF';
   });
+  const [activeTab, setActiveTab] = useState('profile');
 
   // cropping states
   const [cropImageObj, setCropImageObj] = useState(null);
@@ -206,100 +207,193 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           </button>
         </div>
 
+        <div className="settings-tabs">
+          <button
+            type="button"
+            className={`settings-tab-btn ${activeTab === 'profile' ? 'active' : ''}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            Profile
+          </button>
+          <button
+            type="button"
+            className={`settings-tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
+            onClick={() => setActiveTab('privacy')}
+          >
+            Restrict & Block Panel
+          </button>
+        </div>
+
         {error && <div className="modal-error">{error}</div>}
         {success && <div className="modal-success"><Check size={16} /> Profile saved successfully</div>}
 
         <div className="modal-body">
-          <form onSubmit={handleSave} className="settings-form">
-            {/* profile image section */}
-            <div className="settings-photo-section">
-              <div className="settings-photo-container">
-                {photoUrl ? (
-                  <img src={photoUrl} alt="Profile" className="settings-photo" />
+          {activeTab === 'profile' ? (
+            <>
+              <form onSubmit={handleSave} className="settings-form">
+                {/* profile image section */}
+                <div className="settings-photo-section">
+                  <div className="settings-photo-container">
+                    {photoUrl ? (
+                      <img src={photoUrl} alt="Profile" className="settings-photo" />
+                    ) : (
+                      <User size={36} className="settings-photo-placeholder" />
+                    )}
+                    <label className="photo-edit-badge">
+                      <Camera size={14} />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={handlePhotoUpload} 
+                        style={{ display: 'none' }} 
+                      />
+                    </label>
+                  </div>
+                  <div className="settings-username-display">
+                    @{currentUser.username || 'Anonymous'}
+                  </div>
+                </div>
+
+                {/* bio field */}
+                <div className="settings-group">
+                  <label className="settings-label">
+                    <FileText size={16} /> Bio
+                  </label>
+                  <textarea
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Write your bio..."
+                    maxLength={160}
+                    rows={3}
+                  />
+                </div>
+
+                {/* theme color section */}
+                <div className="settings-group">
+                  <label className="settings-label" style={{ textTransform: 'uppercase', fontWeight: 900 }}>
+                    Theme Color
+                  </label>
+                  <div className="theme-color-picker-grid">
+                    {THEME_COLORS.map((color) => (
+                      <button
+                        key={color.name}
+                        type="button"
+                        className={`theme-color-option-btn ${activeColor === color.hex ? 'active' : ''}`}
+                        style={{ backgroundColor: color.hex }}
+                        onClick={() => {
+                          setActiveColor(color.hex);
+                          localStorage.setItem('convect-theme-color', color.hex);
+                          document.documentElement.style.setProperty('--color', color.hex);
+                        }}
+                        title={color.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="settings-action-buttons">
+                  <button 
+                    type="submit" 
+                    className="btn-primary settings-submit"
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+
+              <hr className="modal-divider" />
+
+              {/* delete account section */}
+              <div className="delete-account-section">
+                <button
+                  type="button"
+                  className="btn-danger delete-btn"
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                >
+                  <Trash2 size={16} /> {deleting ? 'Deleting Account...' : 'Delete Account'}
+                </button>
+                <p className="delete-desc">
+                  Once you delete your account, there is no going back. All messages and chat history will be deleted.
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="privacy-panel-container">
+              <h3 className="privacy-section-title">Restricted Users</h3>
+              <p className="privacy-section-desc">
+                Restricted users can message you, but their conversations will be muted and placed in the Restricted tab.
+              </p>
+              <div className="privacy-list">
+                {!currentUser.restrictedUsers || currentUser.restrictedUsers.length === 0 ? (
+                  <div className="privacy-empty-notice">No restricted users.</div>
                 ) : (
-                  <User size={36} className="settings-photo-placeholder" />
+                  currentUser.restrictedUsers.map((user) => (
+                    <div key={user._id} className="privacy-list-item">
+                      <div className="privacy-item-left">
+                        {user.profilePhoto ? (
+                          <img src={user.profilePhoto} alt={user.username} className="privacy-avatar" />
+                        ) : (
+                          <div className="privacy-avatar-placeholder">
+                            {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                          </div>
+                        )}
+                        <div className="privacy-item-details">
+                          <span className="privacy-username">@{user.username || 'Anonymous'}</span>
+                          {user.bio && <span className="privacy-bio">{user.bio}</span>}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="privacy-action-btn"
+                        onClick={() => onRestrictToggle(user._id, true)}
+                      >
+                        Unrestrict
+                      </button>
+                    </div>
+                  ))
                 )}
-                <label className="photo-edit-badge">
-                  <Camera size={14} />
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    onChange={handlePhotoUpload} 
-                    style={{ display: 'none' }} 
-                  />
-                </label>
               </div>
-              <div className="settings-username-display">
-                @{currentUser.username || 'Anonymous'}
-              </div>
-            </div>
 
-            {/* bio field */}
-            <div className="settings-group">
-              <label className="settings-label">
-                <FileText size={16} /> Bio
-              </label>
-              <textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="Write your bio..."
-                maxLength={160}
-                rows={3}
-              />
-            </div>
+              <hr className="modal-divider" style={{ margin: '1.5rem 0' }} />
 
-            {/* theme color section */}
-            <div className="settings-group">
-              <label className="settings-label" style={{ textTransform: 'uppercase', fontWeight: 900 }}>
-                Theme Color
-              </label>
-              <div className="theme-color-picker-grid">
-                {THEME_COLORS.map((color) => (
-                  <button
-                    key={color.name}
-                    type="button"
-                    className={`theme-color-option-btn ${activeColor === color.hex ? 'active' : ''}`}
-                    style={{ backgroundColor: color.hex }}
-                    onClick={() => {
-                      setActiveColor(color.hex);
-                      localStorage.setItem('convect-theme-color', color.hex);
-                      document.documentElement.style.setProperty('--color', color.hex);
-                    }}
-                    title={color.name}
-                  />
-                ))}
+              <h3 className="privacy-section-title">Blocked Users</h3>
+              <p className="privacy-section-desc">
+                Blocked users cannot start conversations with you or send you messages.
+              </p>
+              <div className="privacy-list">
+                {!currentUser.blockedUsers || currentUser.blockedUsers.length === 0 ? (
+                  <div className="privacy-empty-notice">No blocked users.</div>
+                ) : (
+                  currentUser.blockedUsers.map((user) => (
+                    <div key={user._id} className="privacy-list-item">
+                      <div className="privacy-item-left">
+                        {user.profilePhoto ? (
+                          <img src={user.profilePhoto} alt={user.username} className="privacy-avatar" />
+                        ) : (
+                          <div className="privacy-avatar-placeholder">
+                            {user.username ? user.username.charAt(0).toUpperCase() : '?'}
+                          </div>
+                        )}
+                        <div className="privacy-item-details">
+                          <span className="privacy-username">@{user.username || 'Anonymous'}</span>
+                          {user.bio && <span className="privacy-bio">{user.bio}</span>}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="privacy-action-btn"
+                        onClick={() => onBlockToggle(user._id, true)}
+                      >
+                        Unblock
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
-
-
-
-            <div className="settings-action-buttons">
-              <button 
-                type="submit" 
-                className="btn-primary settings-submit"
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
-
-          <hr className="modal-divider" />
-
-          {/* delete account section */}
-          <div className="delete-account-section">
-            <button
-              type="button"
-              className="btn-danger delete-btn"
-              onClick={handleDeleteAccount}
-              disabled={deleting}
-            >
-              <Trash2 size={16} /> {deleting ? 'Deleting Account...' : 'Delete Account'}
-            </button>
-            <p className="delete-desc">
-              Once you delete your account, there is no going back. All messages and chat history will be deleted.
-            </p>
-          </div>
+          )}
         </div>
       </div>
 
@@ -746,6 +840,170 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated }) => {
           box-shadow: none;
           outline: 3px solid var(--black);
           outline-offset: 2px;
+        }
+
+        .settings-tabs {
+          display: flex;
+          background-color: var(--white);
+          border-bottom: 3px solid var(--black);
+        }
+
+        .settings-tab-btn {
+          flex: 1;
+          padding: 1rem;
+          font-weight: 900;
+          font-size: var(--text-sm);
+          text-transform: uppercase;
+          background-color: var(--white);
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.1s ease, color 0.1s ease;
+          color: var(--text-secondary);
+          border-right: 3px solid var(--black);
+        }
+
+        .settings-tab-btn:last-child {
+          border-right: none;
+        }
+
+        .settings-tab-btn:hover {
+          background-color: var(--color);
+          color: var(--black);
+        }
+
+        .settings-tab-btn.active {
+          background-color: var(--black);
+          color: var(--white);
+        }
+
+        .privacy-panel-container {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
+        }
+
+        .privacy-section-title {
+          font-size: var(--text-base);
+          font-weight: 900;
+          color: var(--text-primary);
+          text-transform: uppercase;
+          margin: 0;
+        }
+
+        .privacy-section-desc {
+          font-size: var(--text-xs);
+          color: var(--text-muted);
+          margin: 0;
+          font-weight: 600;
+          line-height: 1.4;
+        }
+
+        .privacy-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+          margin-top: 0.25rem;
+        }
+
+        .privacy-list-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem 1rem;
+          background-color: var(--white);
+          border: 3px solid var(--black);
+          border-radius: var(--border-radius);
+          box-shadow: 3px 3px 0px var(--black);
+          gap: 1rem;
+        }
+
+        .privacy-item-left {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          min-width: 0;
+        }
+
+        .privacy-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          object-fit: cover;
+          border: 2px solid var(--black);
+          flex-shrink: 0;
+        }
+
+        .privacy-avatar-placeholder {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          border: 2px solid var(--black);
+          background-color: var(--white);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-weight: 900;
+          font-size: var(--text-lg);
+          color: var(--black);
+          flex-shrink: 0;
+        }
+
+        .privacy-item-details {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        .privacy-username {
+          font-size: var(--text-sm);
+          font-weight: 900;
+          color: var(--black);
+        }
+
+        .privacy-bio {
+          font-size: var(--text-xs);
+          color: var(--text-muted);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          font-weight: 600;
+        }
+
+        .privacy-action-btn {
+          padding: 0.4rem 0.8rem;
+          font-size: var(--text-xs);
+          font-weight: 900;
+          text-transform: uppercase;
+          background-color: var(--white);
+          border: 3px solid var(--black);
+          border-radius: var(--border-radius);
+          box-shadow: 2px 2px 0px var(--black);
+          cursor: pointer;
+          transition: transform 0.1s ease, box-shadow 0.1s ease;
+          flex-shrink: 0;
+        }
+
+        .privacy-action-btn:hover {
+          transform: translate(1px, 1px);
+          box-shadow: 1px 1px 0px var(--black);
+          background-color: var(--color);
+        }
+
+        .privacy-action-btn:active {
+          transform: translate(2px, 2px);
+          box-shadow: none;
+        }
+
+        .privacy-empty-notice {
+          text-align: center;
+          padding: 1.5rem;
+          background-color: var(--white);
+          border: 3px dashed var(--border);
+          border-radius: var(--border-radius);
+          color: var(--text-muted);
+          font-weight: 900;
+          font-size: var(--text-sm);
+          text-transform: uppercase;
         }
       `}</style>
     </div>
