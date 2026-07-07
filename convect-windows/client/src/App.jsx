@@ -416,7 +416,7 @@ const App = () => {
           height: 100vh;
           width: 100vw;
           background-color: var(--bg-app);
-          overflow: hidden;
+          overflow-y: auto;
         }
         
         /* Custom Clerk Styling matching the app design system */

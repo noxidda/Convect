@@ -254,6 +254,7 @@ const Signup = () => {
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
+          margin: auto;
           box-shadow: 8px 8px 0px #000000;
           animation: fadeIn 0.3s ease-out;
         }

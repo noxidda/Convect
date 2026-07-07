@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
 import User from './models/User.js';
+import Message from './models/Message.js';
 
 let io = null;
 const userSockets = new Map(); // mongouserid (string) ->
@@ -81,6 +82,22 @@ export const initSocket = (httpServer) => {
       socket.on('leave_room', (chatId) => {
         socket.leave(chatId);
         console.log(`Socket ${socket.id} left chat: ${chatId}`);
+      });
+
+      // mark messages as read
+      socket.on('mark_read', async ({ chatId }) => {
+        try {
+          await Message.updateMany(
+            { conversationId: chatId, sender: { $ne: socket.userId }, isRead: false },
+            { $set: { isRead: true } }
+          );
+          io.to(chatId).emit('messages_read', {
+            conversationId: chatId,
+            readerId: socket.userId
+          });
+        } catch (err) {
+          console.error('Error marking messages as read:', err);
+        }
       });
 
       // typing indicators

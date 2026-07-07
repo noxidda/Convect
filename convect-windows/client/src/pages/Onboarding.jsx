@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser, useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
-import { User, FileText, Image as ImageIcon, CheckCircle } from 'lucide-react';
+import { User, FileText, Image as ImageIcon } from 'lucide-react';
 
 const Onboarding = ({ onOnboarded }) => {
   const { user } = useUser();
@@ -182,7 +182,6 @@ const Onboarding = ({ onOnboarded }) => {
     <div className="onboarding-container">
       <div className="onboarding-card">
         <div className="onboarding-header">
-          <CheckCircle size={32} className="header-icon" />
           <h1 className="onboarding-title">Set Up Your Profile</h1>
           <p className="onboarding-subtitle">Choose a unique username and customize your details to get started.</p>
         </div>

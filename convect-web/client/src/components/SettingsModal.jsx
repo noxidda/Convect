@@ -15,6 +15,7 @@ const THEME_COLORS = [
 
 const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, onRestrictToggle }) => {
   const { signOut } = useClerk();
+  const [username, setUsername] = useState(currentUser.username || '');
   const [bio, setBio] = useState(currentUser.bio || '');
   const [photoUrl, setPhotoUrl] = useState(currentUser.profilePhoto || '');
   const [loading, setLoading] = useState(false);
@@ -161,6 +162,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
 
     try {
       const res = await axios.put('/api/users/profile', {
+        username: username.trim(),
         bio,
         profilePhoto: photoUrl,
       });
@@ -252,6 +254,25 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
                   <div className="settings-username-display">
                     @{currentUser.username || 'Anonymous'}
                   </div>
+                </div>
+
+                {/* username field */}
+                <div className="settings-group">
+                  <label className="settings-label">
+                    <User size={16} /> Username
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
+                    placeholder="e.g. johndoe"
+                    required
+                    minLength={3}
+                    maxLength={30}
+                  />
+                  <span className="settings-tip">
+                    Only letters, numbers, and underscores. Limit: 2 changes per month.
+                  </span>
                 </div>
 
                 {/* bio field */}
@@ -620,6 +641,12 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           display: flex;
           flex-direction: column;
           gap: 0.5rem;
+        }
+
+        .settings-tip {
+          font-size: var(--text-xs);
+          color: var(--text-muted);
+          font-weight: 600;
         }
 
         .settings-label {

@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
         ref: 'User',
       },
     ],
+    usernameChanges: {
+      type: [Date],
+      default: [],
+    },
   },
   { timestamps: true }
 );

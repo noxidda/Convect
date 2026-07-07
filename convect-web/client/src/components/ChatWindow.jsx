@@ -37,6 +37,9 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
       try {
         const res = await axios.get(`/api/conversations/${chatId}/messages`);
         setMessages(res.data);
+        if (socket) {
+          socket.emit('mark_read', { chatId });
+        }
       } catch (err) {
         console.error('Error fetching messages:', err);
       } finally {
@@ -70,6 +73,9 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
           if (prev.some((m) => m._id === msg._id)) return prev;
           return [...prev, msg];
         });
+        if (msg.sender._id !== currentUser._id) {
+          socket.emit('mark_read', { chatId });
+        }
       }
     };
 
@@ -77,6 +83,19 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
       if (msg.conversationId === chatId) {
         setMessages((prev) =>
           prev.map((m) => (m._id === msg._id ? msg : m))
+        );
+      }
+    };
+
+    const handleMessagesRead = ({ conversationId, readerId }) => {
+      if (conversationId === chatId && readerId !== currentUser._id) {
+        setMessages((prev) =>
+          prev.map((m) => {
+            if (m.sender._id === currentUser._id && !m.isRead) {
+              return { ...m, isRead: true };
+            }
+            return m;
+          })
         );
       }
     };
@@ -90,11 +109,13 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
 
     socket.on('new_message', handleNewMessage);
     socket.on('message_edited', handleMessageEdited);
+    socket.on('messages_read', handleMessagesRead);
     window.addEventListener('local_message_deleted', handleLocalMsgDeleted);
 
     return () => {
       socket.off('new_message', handleNewMessage);
       socket.off('message_edited', handleMessageEdited);
+      socket.off('messages_read', handleMessagesRead);
       window.removeEventListener('local_message_deleted', handleLocalMsgDeleted);
     };
   }, [socket, chatId]);
@@ -245,6 +266,11 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
                     <div className="message-meta">
                       <span className="msg-time">{formatTime(msg.createdAt)}</span>
                       {msg.isEdited && !isMsgDeleted && <span className="msg-edited-tag">edited</span>}
+                      {isSelf && !isMsgDeleted && (
+                        <span className={`msg-status-tick ${msg.isRead ? 'read' : 'sent'}`}>
+                          {msg.isRead ? ' ✓✓' : ' ✓'}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -387,17 +413,13 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
         .header-status {
           font-size: var(--text-xs);
           color: var(--text-muted);
-          font-weight: 900;
+          font-weight: 500;
           text-transform: uppercase;
         }
 
         .typing-indicator {
-          color: var(--black);
-          font-weight: 900;
-          background-color: var(--color);
-          padding: 1px 4px;
-          border-radius: 2px;
-          border: 1px solid var(--black);
+          color: inherit;
+          font-weight: inherit;
         }
 
         /* Messages Thread Styling */
@@ -501,6 +523,20 @@ const ChatWindow = ({ activeChat, currentUser, isFriend, onBack, onRemoveFriend,
         .msg-edited-tag {
           font-style: italic;
           text-transform: uppercase;
+        }
+
+        .msg-status-tick {
+          font-size: 0.65rem;
+          margin-left: 2px;
+          font-weight: 900;
+        }
+
+        .msg-status-tick.sent {
+          color: rgba(0, 0, 0, 0.4);
+        }
+
+        .msg-status-tick.read {
+          color: #2563eb;
         }
 
         /* Input Area styling */

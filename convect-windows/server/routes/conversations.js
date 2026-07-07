@@ -240,6 +240,15 @@ router.get('/:id/messages', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Conversation not found' });
     }
 
+    // Mark incoming messages as read
+    await Message.updateMany(
+      { conversationId, sender: { $ne: currentUserId }, isRead: false },
+      { $set: { isRead: true } }
+    );
+
+    // Notify participants in room that messages have been read
+    sendToRoom(conversationId, 'messages_read', { conversationId, readerId: currentUserId });
+
     // retrieve messages that
     const messages = await Message.find({
       conversationId,

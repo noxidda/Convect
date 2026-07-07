@@ -76,19 +76,32 @@ router.put('/profile', requireAuth, async (req, res) => {
 
     if (username) {
       const cleanUsername = username.trim();
-      if (cleanUsername.length < 3 || cleanUsername.length > 30) {
-        return res.status(400).json({ error: 'Username must be between 3 and 30 characters' });
-      }
+      if (cleanUsername !== user.username) {
+        if (cleanUsername.length < 3 || cleanUsername.length > 30) {
+          return res.status(400).json({ error: 'Username must be between 3 and 30 characters' });
+        }
 
-      // check if username
-      const existingUser = await User.findOne({
-        username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') },
-        _id: { $ne: user._id }
-      });
-      if (existingUser) {
-        return res.status(400).json({ error: 'Username is already taken' });
+        // check if username is already taken
+        const existingUser = await User.findOne({
+          username: { $regex: new RegExp(`^${cleanUsername}$`, 'i') },
+          _id: { $ne: user._id }
+        });
+        if (existingUser) {
+          return res.status(400).json({ error: 'Username is already taken' });
+        }
+
+        // limit username changes to twice a month (rolling 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const recentChanges = (user.usernameChanges || []).filter(d => new Date(d) >= thirtyDaysAgo);
+        if (recentChanges.length >= 2) {
+          return res.status(400).json({ error: 'You can only change your username twice a month.' });
+        }
+
+        user.username = cleanUsername;
+        user.usernameChanges = [...recentChanges, new Date()];
       }
-      user.username = cleanUsername;
     }
 
     if (bio !== undefined) {
