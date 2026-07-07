@@ -206,7 +206,140 @@ const AppContent = () => {
   );
 };
 
+const MobileBlockedScreen = () => {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      width: '100vw',
+      backgroundColor: '#ffd8a8',
+      color: '#000000',
+      padding: '2rem',
+      textAlign: 'center',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{
+        maxWidth: '450px',
+        backgroundColor: '#FFFFFF',
+        border: '4px solid #000000',
+        borderRadius: '12px',
+        padding: '2.5rem 2rem',
+        boxShadow: '10px 10px 0px #000000',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '1.5rem',
+      }}>
+        <div style={{
+          position: 'relative',
+          width: '80px',
+          height: '80px',
+          backgroundColor: '#ffc5c5',
+          border: '3px solid #000000',
+          borderRadius: '50%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          boxShadow: '4px 4px 0px #000000',
+          animation: 'bounce 2s infinite ease-in-out'
+        }}>
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#000000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
+          </svg>
+          <div style={{
+            position: 'absolute',
+            top: '-5px',
+            right: '-5px',
+            backgroundColor: '#ff3e3e',
+            color: '#ffffff',
+            border: '2.5px solid #000000',
+            borderRadius: '50%',
+            width: '30px',
+            height: '30px',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontWeight: '900',
+            fontSize: '1rem',
+            boxShadow: '2px 2px 0px #000000'
+          }}>
+            🚫
+          </div>
+        </div>
+
+        <h1 style={{
+          fontSize: '1.8rem',
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          margin: 0,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1
+        }}>
+          PC Only Access
+        </h1>
+
+        <p style={{
+          color: '#222222',
+          fontSize: '0.95rem',
+          lineHeight: 1.5,
+          fontWeight: 600,
+          margin: 0
+        }}>
+          Convect is designed specifically for <span style={{ textDecoration: 'underline', fontWeight: 900 }}>desktop or laptop screens</span>. 
+          Please access this app from a PC to join the conversation!
+        </p>
+
+        <div style={{
+          width: '100%',
+          backgroundColor: '#F5F5F5',
+          border: '3px solid #000000',
+          padding: '1rem',
+          borderRadius: '8px',
+          fontSize: '0.8rem',
+          fontFamily: 'monospace',
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          boxShadow: '3px 3px 0px #000000'
+        }}>
+          📱 Current device: Mobile/Phone detected
+        </div>
+      </div>
+      <style>{`
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+const useDeviceCheck = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkDevice = () => {
+      const userAgentMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const smallScreen = window.innerWidth < 768;
+      setIsMobile(userAgentMobile || smallScreen);
+    };
+
+    checkDevice();
+    window.addEventListener('resize', checkDevice);
+    return () => window.removeEventListener('resize', checkDevice);
+  }, []);
+
+  return isMobile;
+};
+
 const App = () => {
+  const isMobile = useDeviceCheck();
+
   // global theme initialization
   useEffect(() => {
     // remove the data-theme
@@ -218,6 +351,10 @@ const App = () => {
       document.documentElement.style.setProperty('--color', savedColor);
     }
   }, []);
+
+  if (isMobile) {
+    return <MobileBlockedScreen />;
+  }
 
   // if clerk publishable
   if (!clerkPubKey) {
