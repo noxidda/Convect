@@ -40,13 +40,13 @@ export const requireAuth = async (req, res, next) => {
 
   // dynamic import of
   try {
-    const { clerkClient } = await import('@clerk/express');
+    const { verifyToken } = await import('@clerk/express');
     
     if (!token) {
       return res.status(401).json({ error: "Unauthorized: No token provided" });
     }
 
-    const decoded = await clerkClient.verifyToken(token);
+    const decoded = await verifyToken(token);
     req.auth = { userId: decoded.sub };
     next();
   } catch (err) {
