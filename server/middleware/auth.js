@@ -48,6 +48,7 @@ export const requireAuth = async (req, res, next) => {
 
     const decoded = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
+      clockSkewInMs: 60000 // 60 seconds tolerance for clock skew
     });
     req.auth = { userId: decoded.sub };
     next();
