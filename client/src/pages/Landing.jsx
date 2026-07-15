@@ -7,7 +7,7 @@ const Landing = () => {
   const { isSignedIn } = useAuth();
   
   const handleDownload = () => {
-    alert('Convect for Windows download starting...');
+    window.location.href = 'https://github.com/noxidda/Convect-NWA/releases/download/application/Convect.x64.exe';
   };
 
   return (
@@ -45,7 +45,7 @@ const Landing = () => {
           <div className="hero-content">
             <h1 className="hero-title">EASY. FAST.<br />MINIMAL CHAT.</h1>
             <p className="hero-tagline">
-              Convect is a lightweight, real-time communication platform designed for fast conversations and keyboard-first navigation.
+              Built for the always-on generation, Convect keeps conversations fast, effortless, and right where your thoughts are.
             </p>
             <div className="hero-actions">
               <button onClick={handleDownload} className="btn-download-hero">
@@ -81,7 +81,7 @@ const Landing = () => {
             </p>
           </div>
           <div className="feature-card">
-            <h3 className="feature-title">Windows Native</h3>
+            <h3 className="feature-title">Windows Native Support</h3>
             <p className="feature-desc">
               Optimized for Windows. Enjoy low resource consumption, custom taskbar capabilities, and native performance.
             </p>
@@ -91,7 +91,7 @@ const Landing = () => {
 
       {/* Footer */}
       <footer className="landing-footer">
-        <p className="footer-text">&copy; {new Date().getFullYear()} Convect. made by Aditya Pandit.</p>
+        <p className="footer-text">made by Aditya Pandit.</p>
       </footer>
 
       {/* Style Block */}
