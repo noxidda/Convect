@@ -18,6 +18,24 @@ const messageSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    messageType: {
+      type: String,
+      enum: ['text', 'image', 'file'],
+      default: 'text',
+    },
+    imageQuality: {
+      type: String,
+      enum: ['half', 'full'],
+      default: null,
+    },
+    fileName: {
+      type: String,
+      default: null,
+    },
+    fileSize: {
+      type: Number,
+      default: null,
+    },
     isEdited: {
       type: Boolean,
       default: false,

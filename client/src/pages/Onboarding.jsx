@@ -10,7 +10,7 @@ const Onboarding = ({ onOnboarded }) => {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
-  const [bio, setBio] = useState('Hello! :)');
+  const [bio, setBio] = useState('Hey there! I am using this chat app.');
   const [photoUrl, setPhotoUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -218,7 +218,7 @@ const Onboarding = ({ onOnboarded }) => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
-              placeholder=" "
+              placeholder="e.g. johndoe"
               required
               minLength={3}
               maxLength={30}
@@ -362,13 +362,13 @@ const Onboarding = ({ onOnboarded }) => {
         .error-alert {
           background-color: var(--black);
           color: var(--color);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.75rem 1rem;
           border-radius: var(--border-radius);
           margin-bottom: 1.5rem;
           font-size: var(--text-sm);
           font-weight: 900;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           text-transform: uppercase;
         }
 
@@ -390,13 +390,13 @@ const Onboarding = ({ onOnboarded }) => {
           width: 100px;
           height: 100px;
           border-radius: 50%;
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           display: flex;
           justify-content: center;
           align-items: center;
           overflow: hidden;
           background-color: var(--white);
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
         }
 
         .avatar-preview {
@@ -414,20 +414,20 @@ const Onboarding = ({ onOnboarded }) => {
           align-items: center;
           gap: 0.5rem;
           background-color: var(--color);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           border-radius: var(--border-radius);
           padding: 0.5rem 1rem;
           font-size: var(--text-sm);
           font-weight: 900;
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           text-transform: uppercase;
         }
 
         .avatar-upload-btn:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           background-color: var(--color);
         }
 
@@ -463,19 +463,19 @@ const Onboarding = ({ onOnboarded }) => {
 
         .btn-logout {
           background-color: var(--white);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           color: var(--black);
           padding: 0.75rem 1.5rem;
           border-radius: var(--border-radius);
           font-weight: 900;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           transition: transform 0.1s ease, box-shadow 0.1s ease;
           text-transform: uppercase;
         }
 
         .btn-logout:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           background-color: var(--color);
         }
 
@@ -535,7 +535,7 @@ const Onboarding = ({ onOnboarded }) => {
           overflow: hidden;
           background-color: #000000;
           border: 3px solid var(--border);
-          box-shadow: 4px 4px 0px var(--black);
+          box-shadow: 4px 4px 0px var(--border);
         }
 
         .crop-canvas-wrapper canvas {
@@ -577,7 +577,7 @@ const Onboarding = ({ onOnboarded }) => {
           outline: none;
           height: 8px;
           background: #EFEFEF;
-          border: 2px solid #000000;
+          border: 2px solid var(--border);
           border-radius: 4px;
         }
 
@@ -597,8 +597,8 @@ const Onboarding = ({ onOnboarded }) => {
           text-align: center;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
           text-transform: uppercase;
-          box-shadow: 3px 3px 0px var(--black);
-          border: 3px solid var(--black);
+          box-shadow: 3px 3px 0px var(--border);
+          border: 3px solid var(--border);
         }
 
         .crop-btn-cancel {
@@ -608,7 +608,7 @@ const Onboarding = ({ onOnboarded }) => {
 
         .crop-btn-cancel:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .crop-btn-apply {
@@ -618,7 +618,7 @@ const Onboarding = ({ onOnboarded }) => {
 
         .crop-btn-apply:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
         }
       `}</style>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import axios from 'axios';
-import { X, User, FileText, Sun, Moon, Trash2, Camera, Check, ShieldAlert, Ban } from 'lucide-react';
+import { X, User, FileText, Trash2, Camera, Check, ShieldAlert, Ban } from 'lucide-react';
 
 const THEME_COLORS = [
   { name: 'Red', hex: '#FFC5C5' },
@@ -13,6 +13,16 @@ const THEME_COLORS = [
   { name: 'Indigo', hex: '#C1D3FF' }
 ];
 
+const COLOR_MAP = {
+  '#FFC5C5': '#1E0808', // Red (extremely dark)
+  '#FFC6FF': '#1E081E', // Pink (extremely dark)
+  '#CAEAFF': '#081420', // Blue (extremely dark)
+  '#FDFFB6': '#1A1905', // Yellow (extremely dark)
+  '#CAFFBF': '#081C08', // Green (extremely dark)
+  '#D6C9FF': '#120820', // Purple (extremely dark)
+  '#C1D3FF': '#080F24'  // Indigo (extremely dark)
+};
+
 const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, onRestrictToggle }) => {
   const { signOut } = useClerk();
   const [username, setUsername] = useState(currentUser.username || '');
@@ -22,6 +32,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message: '...', onConfirm: () => void }
   const [activeColor, setActiveColor] = useState(() => {
     return localStorage.getItem('convect-theme-color') || '#D6C9FF';
   });
@@ -177,26 +188,26 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const doubleCheck = window.confirm(
-      'Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone. All chats, messages, and configurations will be deleted.'
-    );
-    if (!doubleCheck) return;
+  const handleDeleteAccount = () => {
+    setConfirmDialog({
+      message: 'Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone. All chats, messages, and configurations will be deleted.',
+      onConfirm: async () => {
+        setDeleting(true);
+        setError('');
 
-    setDeleting(true);
-    setError('');
-
-    try {
-      await axios.delete('/api/users/account');
-      // sign out from
-      signOut(() => {
-        window.location.href = '/login';
-      });
-    } catch (err) {
-      console.error('Error deleting account:', err);
-      setError('Failed to delete account. Please try again.');
-      setDeleting(false);
-    }
+        try {
+          await axios.delete('/api/users/account');
+          // sign out from
+          signOut(() => {
+            window.location.href = '/login';
+          });
+        } catch (err) {
+          console.error('Error deleting account:', err);
+          setError('Failed to delete account. Please try again.');
+          setDeleting(false);
+        }
+      }
+    });
   };
 
   return (
@@ -302,9 +313,13 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
                         className={`theme-color-option-btn ${activeColor === color.hex ? 'active' : ''}`}
                         style={{ backgroundColor: color.hex }}
                         onClick={() => {
+                          const targetBorderColor = COLOR_MAP[color.hex] || color.hex;
+                          const targetShadowColor = COLOR_MAP[color.hex] || color.hex;
                           setActiveColor(color.hex);
                           localStorage.setItem('convect-theme-color', color.hex);
                           document.documentElement.style.setProperty('--color', color.hex);
+                          document.documentElement.style.setProperty('--border-color', targetBorderColor);
+                          document.documentElement.style.setProperty('--border-shadow-color', targetShadowColor);
                         }}
                         title={color.name}
                       />
@@ -323,8 +338,6 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
                 </div>
               </form>
 
-              <hr className="modal-divider" />
-
               {/* delete account section */}
               <div className="delete-account-section">
                 <button
@@ -336,7 +349,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
                   <Trash2 size={16} /> {deleting ? 'Deleting Account...' : 'Delete Account'}
                 </button>
                 <p className="delete-desc">
-                  Once you delete your account, there is no going back. All messages and chat history will be deleted.
+                  All data will be permanently deleted.
                 </p>
               </div>
             </>
@@ -470,7 +483,140 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
         </div>
       )}
 
+      {/* Confirmation Modal */}
+      {confirmDialog && (
+        <div className="neobrutalist-confirm-overlay">
+          <div className="neobrutalist-confirm-card">
+            <h3 className="neobrutalist-confirm-title">Confirm Action</h3>
+            <p className="neobrutalist-confirm-message">{confirmDialog.message}</p>
+            <div className="neobrutalist-confirm-actions">
+              <button 
+                className="neobrutalist-confirm-btn cancel" 
+                onClick={() => setConfirmDialog(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="neobrutalist-confirm-btn confirm" 
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(null);
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       <style>{`
+        /* Neobrutalist Confirmation Modal Styles */
+        .neobrutalist-confirm-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(4px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+        }
+
+        .neobrutalist-confirm-card {
+          background-color: var(--white);
+          border: 4px solid var(--border);
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 440px;
+          width: 90%;
+          box-shadow: 8px 8px 0px var(--border);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          animation: scaleUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .neobrutalist-confirm-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: var(--black);
+          margin: 0;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .neobrutalist-confirm-message {
+          font-size: 0.95rem;
+          color: var(--text-muted);
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .neobrutalist-confirm-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 8px;
+        }
+
+        .neobrutalist-confirm-btn {
+          font-weight: bold;
+          font-size: 0.9rem;
+          padding: 10px 18px;
+          border: 3px solid var(--border);
+          border-radius: 6px;
+          cursor: pointer;
+          transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .neobrutalist-confirm-btn.cancel {
+          background-color: var(--white);
+          color: var(--black);
+          box-shadow: 3px 3px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.cancel:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.cancel:active {
+          transform: translate(1px, 1px);
+          box-shadow: 2px 2px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.confirm {
+          background-color: #FF5A5F;
+          color: #000000;
+          box-shadow: 3px 3px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.confirm:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.confirm:active {
+          transform: translate(1px, 1px);
+          box-shadow: 2px 2px 0px var(--border);
+        }
+
+        @keyframes scaleUp {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -518,17 +664,17 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           display: flex;
           align-items: center;
           background-color: var(--white);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.25rem;
           border-radius: var(--border-radius);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .close-btn:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
           background-color: var(--color);
         }
 
@@ -543,20 +689,20 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
         .modal-error {
           background-color: var(--black);
           color: var(--color);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.75rem 1rem;
           margin: 1rem 1.5rem 0 1.5rem;
           border-radius: var(--border-radius);
           font-size: var(--text-sm);
           font-weight: 900;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           text-transform: uppercase;
         }
 
         .modal-success {
           background-color: var(--color);
           color: var(--black);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.75rem 1rem;
           margin: 1rem 1.5rem 0 1.5rem;
           border-radius: var(--border-radius);
@@ -565,7 +711,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           text-transform: uppercase;
         }
 
@@ -593,7 +739,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           display: flex;
           justify-content: center;
           align-items: center;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
         }
 
         .settings-photo {
@@ -620,14 +766,14 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          border: 3px solid var(--black);
-          box-shadow: 1px 1px 0px var(--black);
+          border: 3px solid var(--border);
+          box-shadow: 1px 1px 0px var(--border);
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .photo-edit-badge:hover {
           transform: translate(1px, 1px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           background-color: var(--white);
         }
 
@@ -750,7 +896,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           overflow: hidden;
           background-color: #000000;
           border: 3px solid var(--border);
-          box-shadow: 4px 4px 0px var(--black);
+          box-shadow: 4px 4px 0px var(--border);
         }
 
         .crop-canvas-wrapper canvas {
@@ -792,7 +938,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           outline: none;
           height: 8px;
           background: #EFEFEF;
-          border: 2px solid #000000;
+          border: 2px solid var(--border);
           border-radius: var(--border-radius);
         }
 
@@ -812,8 +958,8 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           text-align: center;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
           text-transform: uppercase;
-          box-shadow: 3px 3px 0px var(--black);
-          border: 3px solid var(--black);
+          box-shadow: 3px 3px 0px var(--border);
+          border: 3px solid var(--border);
         }
 
         .crop-btn-cancel {
@@ -823,7 +969,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
 
         .crop-btn-cancel:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
           background-color: var(--color);
         }
 
@@ -834,7 +980,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
 
         .crop-btn-apply:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
           background-color: var(--white);
         }
 
@@ -850,29 +996,29 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           width: 38px;
           height: 38px;
           border-radius: 50%;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           cursor: pointer;
           position: relative;
-          box-shadow: 2px 2px 0px #000000;
+          box-shadow: 2px 2px 0px var(--border);
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .theme-color-option-btn:hover {
           transform: translate(-1px, -1px);
-          box-shadow: 3px 3px 0px #000000;
+          box-shadow: 3px 3px 0px var(--border);
         }
 
         .theme-color-option-btn.active {
           transform: translate(1px, 1px);
           box-shadow: none;
-          outline: 3px solid var(--black);
+          outline: 3px solid var(--border);
           outline-offset: 2px;
         }
 
         .settings-tabs {
           display: flex;
           background-color: var(--white);
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
         }
 
         .settings-tab-btn {
@@ -886,7 +1032,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           cursor: pointer;
           transition: background-color 0.1s ease, color 0.1s ease;
           color: var(--text-secondary);
-          border-right: 3px solid var(--black);
+          border-right: 3px solid var(--border);
         }
 
         .settings-tab-btn:last-child {
@@ -938,9 +1084,9 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           align-items: center;
           padding: 0.75rem 1rem;
           background-color: var(--white);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           border-radius: var(--border-radius);
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           gap: 1rem;
         }
 
@@ -956,7 +1102,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           height: 40px;
           border-radius: 50%;
           object-fit: cover;
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           flex-shrink: 0;
         }
 
@@ -964,7 +1110,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           width: 40px;
           height: 40px;
           border-radius: 50%;
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           background-color: var(--white);
           display: flex;
           justify-content: center;
@@ -1002,9 +1148,9 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
           font-weight: 900;
           text-transform: uppercase;
           background-color: var(--white);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           border-radius: var(--border-radius);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
           flex-shrink: 0;
@@ -1012,7 +1158,7 @@ const SettingsModal = ({ currentUser, onClose, onProfileUpdated, onBlockToggle, 
 
         .privacy-action-btn:hover {
           transform: translate(1px, 1px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
           background-color: var(--color);
         }
 

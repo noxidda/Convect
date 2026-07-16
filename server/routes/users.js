@@ -278,40 +278,59 @@ router.post('/unrestrict', requireAuth, async (req, res) => {
   }
 });
 
+// Helper function to delete all data related to a user
+export const deleteUserAllData = async (clerkId) => {
+  const user = await User.findOne({ clerkId });
+  if (!user) {
+    console.log(`deleteUserAllData: User with Clerk ID ${clerkId} not found in database.`);
+    return;
+  }
+
+  const mongoUserId = user._id;
+
+  // 1. Remove references to this user from blockedUsers, restrictedUsers, and friends arrays of other users
+  await User.updateMany(
+    {},
+    {
+      $pull: {
+        blockedUsers: mongoUserId,
+        restrictedUsers: mongoUserId,
+        friends: mongoUserId
+      }
+    }
+  );
+
+  // 2. Find all conversations where this user is a participant
+  const conversations = await Conversation.find({ participants: mongoUserId });
+  const conversationIds = conversations.map(c => c._id);
+
+  // 3. Delete all messages inside those conversations
+  if (conversationIds.length > 0) {
+    await Message.deleteMany({ conversationId: { $in: conversationIds } });
+  }
+
+  // 4. Delete the conversations themselves
+  await Conversation.deleteMany({ _id: { $in: conversationIds } });
+
+  // 5. Delete all friend requests sent by or sent to this user
+  await FriendRequest.deleteMany({
+    $or: [{ sender: mongoUserId }, { recipient: mongoUserId }]
+  });
+
+  // 6. Finally, delete the User document
+  await User.deleteOne({ _id: mongoUserId });
+  console.log(`deleteUserAllData: Successfully cleaned up all data for user ${clerkId} (Mongo ID: ${mongoUserId})`);
+};
+
 // 9. delete account
 router.delete('/account', requireAuth, async (req, res) => {
   const clerkId = req.auth.userId;
 
   try {
-    const user = await User.findOne({ clerkId });
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    // 1. Delete all user data in MongoDB
+    await deleteUserAllData(clerkId);
 
-    const mongoUserId = user._id;
-
-    // delete user from
-    await User.updateMany(
-      {},
-      {
-        $pull: {
-          blockedUsers: mongoUserId,
-          restrictedUsers: mongoUserId
-        }
-      }
-    );
-
-    // delete messages sent
-    await Message.deleteMany({ sender: mongoUserId });
-
-    // find and delete
-    // to be clean,
-    await Conversation.deleteMany({ participants: mongoUserId });
-
-    // delete user model
-    await User.deleteOne({ _id: mongoUserId });
-
-    // call clerk api
+    // 2. Call Clerk API to delete user account on Clerk
     if (process.env.CLERK_SECRET_KEY) {
       try {
         const { clerkClient } = await import('@clerk/express');

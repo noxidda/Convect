@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useSignUp } from '@clerk/clerk-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, Loader2, KeyRound, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader2, KeyRound, MessageSquare } from 'lucide-react';
 import signinImg from '../assets/signin.jpg';
 
 const Signup = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -120,34 +120,14 @@ const Signup = () => {
                 <div className="input-icon-wrapper">
                   <input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type="password"
                     placeholder="Min. 8 characters"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    style={{ paddingRight: '46px !important' }}
                   />
                   <Lock size={18} className="input-icon" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="password-toggle-btn"
-                    style={{
-                      position: 'absolute',
-                      right: '14px',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: '#000000',
-                      padding: 0,
-                      zIndex: 3
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
                 </div>
               </div>
 
@@ -269,14 +249,14 @@ const Signup = () => {
           width: 100%;
           max-width: 420px;
           background-color: #FFFFFF;
-          border: 4px solid #000000;
+          border: 4px solid var(--border);
           border-radius: 10px;
           padding: 2.5rem;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
           margin: auto;
-          box-shadow: 8px 8px 0px #000000;
+          box-shadow: 8px 8px 0px var(--border);
           animation: fadeIn 0.3s ease-out;
         }
 
@@ -298,7 +278,7 @@ const Signup = () => {
           height: 60px;
           color: #FFFFFF;
           margin-bottom: 0.25rem;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
         }
 
         .brand-name {
@@ -318,7 +298,7 @@ const Signup = () => {
 
         .error-alert {
           background-color: #000000;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           border-radius: 10px;
           padding: 0.75rem 1rem;
           color: #FFFFFF;
@@ -327,7 +307,7 @@ const Signup = () => {
           align-items: flex-start;
           gap: 0.5rem;
           line-height: 1.4;
-          box-shadow: 3px 3px 0px #000000;
+          box-shadow: 3px 3px 0px var(--border);
         }
 
         .error-icon {
@@ -373,20 +353,20 @@ const Signup = () => {
         .input-icon-wrapper input {
           padding-left: 42px !important;
           background-color: #FFFFFF !important;
-          border: 3px solid #000000 !important;
+          border: 3px solid var(--border) !important;
           border-radius: 10px !important;
           color: #000000 !important;
           font-size: var(--text-sm);
           height: 48px;
-          box-shadow: 3px 3px 0px #000000 !important;
+          box-shadow: 3px 3px 0px var(--border) !important;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .input-icon-wrapper input:focus {
           background-color: #FFFFFF !important;
-          border-color: #000000 !important;
+          border-color: var(--border) !important;
           transform: translate(-2px, -2px);
-          box-shadow: 5px 5px 0px #000000 !important;
+          box-shadow: 5px 5px 0px var(--border) !important;
         }
 
         .input-icon-wrapper input:focus ~ .input-icon {
@@ -401,19 +381,19 @@ const Signup = () => {
           background-color: #FFFFFF;
           color: #000000;
           font-weight: 900;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           border-radius: 10px;
           height: 48px;
           font-size: var(--text-sm);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          box-shadow: 4px 4px 0px #000000;
+          box-shadow: 4px 4px 0px var(--border);
           text-transform: uppercase;
         }
 
         .submit-btn:hover:not(:disabled) {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px #000000;
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .submit-btn:active:not(:disabled) {
@@ -434,20 +414,20 @@ const Signup = () => {
           align-items: center;
           background-color: #FFFFFF;
           color: #000000;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           font-weight: 900;
           border-radius: 10px;
           height: 48px;
           font-size: var(--text-sm);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          box-shadow: 3px 3px 0px #000000;
+          box-shadow: 3px 3px 0px var(--border);
           text-transform: uppercase;
         }
 
         .back-btn:hover:not(:disabled) {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px #000000;
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .back-btn:disabled {

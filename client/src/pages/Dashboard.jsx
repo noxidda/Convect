@@ -8,7 +8,7 @@ import SettingsModal from '../components/SettingsModal';
 import { 
   Search, Settings, LogOut, MessageSquare, 
   ShieldAlert, Ban, MessageCircle, UserX, User, ArrowLeft,
-  Users, UserPlus, Check, X, UserMinus, Loader2
+  Users, UserPlus, Check, X, UserMinus, Loader2, Info
 } from 'lucide-react';
 
 const Dashboard = ({ dbUser }) => {
@@ -19,6 +19,29 @@ const Dashboard = ({ dbUser }) => {
   const [currentUser, setCurrentUser] = useState(dbUser || null);
   const [conversations, setConversations] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
+
+  const COLOR_MAP = {
+    '#FFC5C5': '#1E0808', // Red (extremely dark)
+    '#FFC6FF': '#1E081E', // Pink (extremely dark)
+    '#CAEAFF': '#081420', // Blue (extremely dark)
+    '#FDFFB6': '#1A1905', // Yellow (extremely dark)
+    '#CAFFBF': '#081C08', // Green (extremely dark)
+    '#D6C9FF': '#120820', // Purple (extremely dark)
+    '#C1D3FF': '#080F24'  // Indigo (extremely dark)
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', 'light');
+
+    const currentBaseColor = localStorage.getItem('convect-theme-color') || '#D6C9FF';
+    document.documentElement.style.setProperty('--color', currentBaseColor);
+
+    const resolvedBorderColor = COLOR_MAP[currentBaseColor] || currentBaseColor;
+    const resolvedShadowColor = COLOR_MAP[currentBaseColor] || currentBaseColor;
+    document.documentElement.style.setProperty('--border-color', resolvedBorderColor);
+    document.documentElement.style.setProperty('--border-shadow-color', resolvedShadowColor);
+  }, []);
+
   
   // tabs: 'all' |
   const [activeTab, setActiveTab] = useState('all');
@@ -36,6 +59,18 @@ const Dashboard = ({ dbUser }) => {
   // modals
   const [showSettings, setShowSettings] = useState(false);
   const [selectedPreviewUser, setSelectedPreviewUser] = useState(null);
+  
+  // toast & custom confirm dialog
+  const [toast, setToast] = useState(null); // { message: '...', type: 'success' | 'error' | 'info' }
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message: '...', onConfirm: () => void }
+
+  const showToast = (message, type = 'info') => {
+    setToast({ message, type });
+    // auto dismiss after 3 seconds
+    setTimeout(() => {
+      setToast(prev => prev && prev.message === message ? null : prev);
+    }, 3000);
+  };
   
   // ui responsive (for
   const [viewingChatMobile, setViewingChatMobile] = useState(false);
@@ -140,7 +175,7 @@ const Dashboard = ({ dbUser }) => {
       setPendingRequests(prev => prev.filter(r => r._id !== requestId));
       fetchFriends();
       fetchConversations();
-      alert(`@${user.username} accepted your friend request!`);
+      showToast(`@${user.username} accepted your friend request!`, 'success');
     };
 
     const handleFriendRemoved = ({ friendId }) => {
@@ -170,12 +205,12 @@ const Dashboard = ({ dbUser }) => {
     try {
       const res = await axios.post('/api/friends/request', { recipientId });
       if (res.data.status === 'accepted') {
-        alert(res.data.message);
+        showToast(res.data.message, 'success');
         await fetchFriends();
         await fetchConversations();
         await fetchPendingRequests();
       } else {
-        alert('Friend request sent successfully.');
+        showToast('Friend request sent successfully.', 'success');
       }
       
       if (searchQuery.trim().length >= 1) {
@@ -184,7 +219,7 @@ const Dashboard = ({ dbUser }) => {
       }
     } catch (err) {
       console.error('Error sending friend request:', err);
-      alert(err.response?.data?.error || 'Failed to send friend request.');
+      showToast(err.response?.data?.error || 'Failed to send friend request.', 'error');
     } finally {
       setActionLoading(prev => ({ ...prev, [recipientId]: false }));
     }
@@ -195,7 +230,7 @@ const Dashboard = ({ dbUser }) => {
     setActionLoading(prev => ({ ...prev, [idKey]: true }));
     try {
       await axios.post('/api/friends/accept', { requestId });
-      alert('Friend request accepted.');
+      showToast('Friend request accepted.', 'success');
       await fetchPendingRequests();
       await fetchFriends();
       await fetchConversations();
@@ -206,7 +241,7 @@ const Dashboard = ({ dbUser }) => {
       }
     } catch (err) {
       console.error('Error accepting friend request:', err);
-      alert(err.response?.data?.error || 'Failed to accept request.');
+      showToast(err.response?.data?.error || 'Failed to accept request.', 'error');
     } finally {
       setActionLoading(prev => ({ ...prev, [idKey]: false }));
     }
@@ -217,7 +252,7 @@ const Dashboard = ({ dbUser }) => {
     setActionLoading(prev => ({ ...prev, [idKey]: true }));
     try {
       await axios.post('/api/friends/reject', { requestId });
-      alert('Friend request rejected.');
+      showToast('Friend request rejected.', 'info');
       await fetchPendingRequests();
 
       if (searchQuery.trim().length >= 1) {
@@ -226,34 +261,38 @@ const Dashboard = ({ dbUser }) => {
       }
     } catch (err) {
       console.error('Error rejecting friend request:', err);
-      alert(err.response?.data?.error || 'Failed to reject request.');
+      showToast(err.response?.data?.error || 'Failed to reject request.', 'error');
     } finally {
       setActionLoading(prev => ({ ...prev, [idKey]: false }));
     }
   };
 
-  const handleRemoveFriend = async (friendId) => {
-    if (!window.confirm('Are you sure you want to remove this friend? This will delete your friendship and any messages will no longer be accessible.')) return;
-    setActionLoading(prev => ({ ...prev, [friendId]: true }));
-    try {
-      await axios.post('/api/friends/remove', { friendId });
-      alert('Friend removed successfully.');
-      await fetchFriends();
-      await fetchConversations();
-      if (activeChat && activeChat.contact._id === friendId) {
-        setActiveChat(null);
-      }
+  const handleRemoveFriend = (friendId) => {
+    setConfirmDialog({
+      message: 'Are you sure you want to remove this friend? This will delete your friendship and any messages will no longer be accessible.',
+      onConfirm: async () => {
+        setActionLoading(prev => ({ ...prev, [friendId]: true }));
+        try {
+          await axios.post('/api/friends/remove', { friendId });
+          showToast('Friend removed successfully.', 'success');
+          await fetchFriends();
+          await fetchConversations();
+          if (activeChat && activeChat.contact._id === friendId) {
+            setActiveChat(null);
+          }
 
-      if (searchQuery.trim().length >= 1) {
-        const searchRes = await axios.get(`/api/users/search?q=${searchQuery}`);
-        setSearchResults(searchRes.data);
+          if (searchQuery.trim().length >= 1) {
+            const searchRes = await axios.get(`/api/users/search?q=${searchQuery}`);
+            setSearchResults(searchRes.data);
+          }
+        } catch (err) {
+          console.error('Error removing friend:', err);
+          showToast(err.response?.data?.error || 'Failed to remove friend.', 'error');
+        } finally {
+          setActionLoading(prev => ({ ...prev, [friendId]: false }));
+        }
       }
-    } catch (err) {
-      console.error('Error removing friend:', err);
-      alert(err.response?.data?.error || 'Failed to remove friend.');
-    } finally {
-      setActionLoading(prev => ({ ...prev, [friendId]: false }));
-    }
+    });
   };
 
   // handle username search
@@ -294,7 +333,7 @@ const Dashboard = ({ dbUser }) => {
       setViewingChatMobile(true);
     } catch (err) {
       console.error('Error opening conversation:', err);
-      alert(err.response?.data?.error || 'Failed to start chat. User might have blocked you.');
+      showToast(err.response?.data?.error || 'Failed to start chat. User might have blocked you.', 'error');
     }
   };
 
@@ -875,7 +914,204 @@ const Dashboard = ({ dbUser }) => {
         </div>
       )}
 
+      {/* Toast Notification Container */}
+      {toast && (
+        <div className="neobrutalist-toast-container">
+          <div className={`neobrutalist-toast ${toast.type}`}>
+            {toast.type === 'success' && <Check size={18} />}
+            {toast.type === 'error' && <ShieldAlert size={18} />}
+            {toast.type === 'info' && <Info size={18} />}
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmDialog && (
+        <div className="neobrutalist-confirm-overlay">
+          <div className="neobrutalist-confirm-card">
+            <h3 className="neobrutalist-confirm-title">Confirm Action</h3>
+            <p className="neobrutalist-confirm-message">{confirmDialog.message}</p>
+            <div className="neobrutalist-confirm-actions">
+              <button 
+                className="neobrutalist-confirm-btn cancel" 
+                onClick={() => setConfirmDialog(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="neobrutalist-confirm-btn confirm" 
+                onClick={() => {
+                  confirmDialog.onConfirm();
+                  setConfirmDialog(null);
+                }}
+              >
+                Confirm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       <style>{`
+        /* Neobrutalist Toast Styles */
+        .neobrutalist-toast-container {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          pointer-events: none;
+        }
+
+        .neobrutalist-toast {
+          pointer-events: auto;
+          background-color: #FFFFFF;
+          color: #000000;
+          border: 3px solid var(--border);
+          border-radius: 8px;
+          padding: 12px 18px;
+          font-weight: bold;
+          font-size: 0.9rem;
+          box-shadow: 4px 4px 0px var(--border);
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          animation: slideInRight 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          max-width: 320px;
+        }
+
+        .neobrutalist-toast.success {
+          background-color: #A3E635; /* bright lime green */
+        }
+
+        .neobrutalist-toast.error {
+          background-color: #FF5A5F; /* bright red */
+        }
+
+        .neobrutalist-toast.info {
+          background-color: #60A5FA; /* bright blue */
+        }
+
+        @keyframes slideInRight {
+          from {
+            transform: translateX(120%) translateY(0);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0) translateY(0);
+            opacity: 1;
+          }
+        }
+
+        /* Neobrutalist Confirmation Modal Styles */
+        .neobrutalist-confirm-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(4px);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 9999;
+        }
+
+        .neobrutalist-confirm-card {
+          background-color: var(--white);
+          border: 4px solid var(--border);
+          border-radius: 12px;
+          padding: 24px;
+          max-width: 440px;
+          width: 90%;
+          box-shadow: 8px 8px 0px var(--border);
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          animation: scaleUp 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        }
+
+        .neobrutalist-confirm-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: var(--black);
+          margin: 0;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .neobrutalist-confirm-message {
+          font-size: 0.95rem;
+          color: var(--text-muted);
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .neobrutalist-confirm-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 8px;
+        }
+
+        .neobrutalist-confirm-btn {
+          font-weight: bold;
+          font-size: 0.9rem;
+          padding: 10px 18px;
+          border: 3px solid var(--border);
+          border-radius: 6px;
+          cursor: pointer;
+          transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .neobrutalist-confirm-btn.cancel {
+          background-color: var(--white);
+          color: var(--black);
+          box-shadow: 3px 3px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.cancel:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.cancel:active {
+          transform: translate(1px, 1px);
+          box-shadow: 2px 2px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.confirm {
+          background-color: #FF5A5F;
+          color: var(--black);
+          box-shadow: 3px 3px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.confirm:hover {
+          transform: translate(-1px, -1px);
+          box-shadow: 4px 4px 0px var(--border);
+        }
+
+        .neobrutalist-confirm-btn.confirm:active {
+          transform: translate(1px, 1px);
+          box-shadow: 2px 2px 0px var(--border);
+        }
+
+        @keyframes scaleUp {
+          from {
+            transform: scale(0.9);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
         /* Preview Modal Overlay & Card with Blur */
         .preview-modal-overlay {
           position: fixed;
@@ -896,7 +1132,7 @@ const Dashboard = ({ dbUser }) => {
 
         .preview-modal-card {
           background-color: var(--white);
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
           width: 100%;
           max-width: 400px;
@@ -912,7 +1148,7 @@ const Dashboard = ({ dbUser }) => {
           justify-content: space-between;
           align-items: center;
           padding: 1.25rem 1.5rem;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           background-color: var(--white);
         }
 
@@ -929,17 +1165,17 @@ const Dashboard = ({ dbUser }) => {
           display: flex;
           align-items: center;
           background-color: var(--white);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.25rem;
           border-radius: var(--border-radius);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .preview-close-btn:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
           background-color: var(--color);
         }
 
@@ -956,7 +1192,7 @@ const Dashboard = ({ dbUser }) => {
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           overflow: hidden;
           background-color: var(--color);
           display: flex;
@@ -996,7 +1232,7 @@ const Dashboard = ({ dbUser }) => {
           line-height: 1.5;
           background: var(--gray-light);
           padding: 1rem;
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           border-radius: var(--border-radius);
           text-align: left;
           word-break: break-word;
@@ -1018,7 +1254,7 @@ const Dashboard = ({ dbUser }) => {
           gap: 0.5rem;
           font-weight: 900;
           height: 48px;
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           border-radius: var(--border-radius);
           text-transform: uppercase;
           font-size: 0.9rem;
@@ -1029,7 +1265,7 @@ const Dashboard = ({ dbUser }) => {
 
         .preview-action-btn:hover:not(:disabled) {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
         }
 
         .preview-action-btn:disabled {
@@ -1085,7 +1321,7 @@ const Dashboard = ({ dbUser }) => {
           color: var(--white);
           height: var(--header-height);
           padding: 0 1.5rem;
-          border-bottom: 4px solid var(--black);
+          border-bottom: 4px solid var(--border);
           box-sizing: border-box;
           z-index: 10;
         }
@@ -1133,7 +1369,7 @@ const Dashboard = ({ dbUser }) => {
           gap: 0.75rem;
           background: var(--white);
           color: var(--black);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.4rem 0.8rem;
           border-radius: var(--border-radius);
           box-shadow: 3px 3px 0px var(--color);
@@ -1143,7 +1379,7 @@ const Dashboard = ({ dbUser }) => {
           width: 30px;
           height: 30px;
           border-radius: 50%;
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           object-fit: cover;
         }
 
@@ -1151,7 +1387,7 @@ const Dashboard = ({ dbUser }) => {
           width: 30px;
           height: 30px;
           border-radius: 50%;
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           display: flex;
           justify-content: center;
           align-items: center;
@@ -1187,7 +1423,7 @@ const Dashboard = ({ dbUser }) => {
         .control-btn {
           background-color: var(--white);
           color: var(--black);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.5rem;
           border-radius: var(--border-radius);
           display: flex;
@@ -1199,7 +1435,7 @@ const Dashboard = ({ dbUser }) => {
 
         .control-btn:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .control-btn:active {
@@ -1243,9 +1479,9 @@ const Dashboard = ({ dbUser }) => {
           flex-direction: column;
           gap: 0.75rem;
           background-color: var(--white);
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           padding: 1rem;
-          box-shadow: 6px 6px 0px var(--black);
+          box-shadow: 6px 6px 0px var(--border);
           border-radius: var(--border-radius);
         }
 
@@ -1254,7 +1490,7 @@ const Dashboard = ({ dbUser }) => {
           align-items: center;
           gap: 0.75rem;
           background: var(--white);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           color: var(--black);
           padding: 0.75rem 1rem;
           border-radius: var(--border-radius);
@@ -1263,14 +1499,14 @@ const Dashboard = ({ dbUser }) => {
           text-transform: uppercase;
           text-align: left;
           transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease;
-          box-shadow: 3px 3px 0px var(--black);
+          box-shadow: 3px 3px 0px var(--border);
           width: 100%;
           cursor: pointer;
         }
 
         .control-nav-item:hover {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .control-nav-item:active {
@@ -1288,7 +1524,7 @@ const Dashboard = ({ dbUser }) => {
         .badge-pill {
           background-color: var(--color);
           color: var(--black);
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           font-size: 0.7rem;
           font-weight: 900;
           border-radius: 10px;
@@ -1299,12 +1535,12 @@ const Dashboard = ({ dbUser }) => {
         .control-nav-item.active .badge-pill {
           background-color: var(--white);
           color: var(--black);
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
         }
 
         .controls-status-box {
           background-color: var(--black);
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
           padding: 1rem;
           box-shadow: 6px 6px 0px var(--white);
@@ -1353,9 +1589,9 @@ const Dashboard = ({ dbUser }) => {
           display: flex;
           flex-direction: column;
           background-color: var(--white);
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
-          box-shadow: 6px 6px 0px var(--black);
+          box-shadow: 6px 6px 0px var(--border);
           flex-shrink: 0;
           overflow: hidden;
         }
@@ -1364,7 +1600,7 @@ const Dashboard = ({ dbUser }) => {
           display: none;
           flex-direction: row;
           background-color: var(--white);
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           width: 100%;
           box-sizing: border-box;
         }
@@ -1378,7 +1614,7 @@ const Dashboard = ({ dbUser }) => {
           padding: 0.85rem 0.5rem;
           background-color: var(--white);
           border: none;
-          border-right: 3px solid var(--black);
+          border-right: 3px solid var(--border);
           color: var(--black);
           font-weight: 900;
           font-size: 0.875rem;
@@ -1402,7 +1638,7 @@ const Dashboard = ({ dbUser }) => {
 
         .directory-search-wrapper {
           padding: 1rem;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           background: var(--white);
         }
 
@@ -1423,18 +1659,18 @@ const Dashboard = ({ dbUser }) => {
 
         .search-box-brutalist input {
           padding-left: 2.5rem !important;
-          border: 3px solid var(--black) !important;
+          border: 3px solid var(--border) !important;
           border-radius: var(--border-radius) !important;
           height: 44px;
           font-weight: 700;
-          box-shadow: 2px 2px 0px var(--black) !important;
+          box-shadow: 2px 2px 0px var(--border) !important;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .search-box-brutalist input:focus {
           background-color: var(--color);
           transform: translate(-1px, -1px);
-          box-shadow: 3px 3px 0px var(--black) !important;
+          box-shadow: 3px 3px 0px var(--border) !important;
         }
 
         .search-box-brutalist input:focus ~ .search-icon-brutalist {
@@ -1454,7 +1690,7 @@ const Dashboard = ({ dbUser }) => {
           padding: 0.75rem 1.25rem 0.5rem 1.25rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           margin-bottom: 0.25rem;
         }
 
@@ -1473,7 +1709,7 @@ const Dashboard = ({ dbUser }) => {
           gap: 0.75rem;
           padding: 0.85rem 1.25rem;
           cursor: pointer;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           transition: background-color 0.1s ease;
         }
 
@@ -1485,7 +1721,7 @@ const Dashboard = ({ dbUser }) => {
           width: 42px;
           height: 42px;
           border-radius: 50%;
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           background-color: var(--white);
           display: flex;
           justify-content: center;
@@ -1493,7 +1729,7 @@ const Dashboard = ({ dbUser }) => {
           font-weight: 900;
           font-size: 1rem;
           color: var(--black);
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           flex-shrink: 0;
         }
 
@@ -1532,7 +1768,7 @@ const Dashboard = ({ dbUser }) => {
         .action-btn-friend {
           background-color: var(--color);
           color: var(--black);
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           padding: 0.4rem 0.8rem;
           border-radius: var(--border-radius);
           font-size: var(--text-xs);
@@ -1541,14 +1777,14 @@ const Dashboard = ({ dbUser }) => {
           display: flex;
           align-items: center;
           gap: 0.25rem;
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           transition: transform 0.1s ease, box-shadow 0.1s ease;
           text-transform: uppercase;
         }
 
         .action-btn-friend:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
         }
 
         .action-btn-friend:active {
@@ -1592,7 +1828,7 @@ const Dashboard = ({ dbUser }) => {
           justify-content: space-between;
           align-items: center;
           padding: 0.85rem 1.25rem;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
         }
 
         .blocked-item-left, .request-item-left, .friend-item-left {
@@ -1624,12 +1860,12 @@ const Dashboard = ({ dbUser }) => {
 
         .btn-unblock {
           background-color: var(--white);
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           padding: 0.4rem 0.8rem;
           border-radius: var(--border-radius);
           font-size: var(--text-xs);
           font-weight: 900;
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
           transition: transform 0.1s ease, box-shadow 0.1s ease;
           text-transform: uppercase;
           cursor: pointer;
@@ -1637,7 +1873,7 @@ const Dashboard = ({ dbUser }) => {
 
         .btn-unblock:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
         }
 
         .request-item-actions {
@@ -1647,7 +1883,7 @@ const Dashboard = ({ dbUser }) => {
         }
 
         .request-action-btn {
-          border: 3px solid var(--black);
+          border: 3px solid var(--border);
           width: 32px;
           height: 32px;
           display: flex;
@@ -1656,7 +1892,7 @@ const Dashboard = ({ dbUser }) => {
           border-radius: var(--border-radius);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          box-shadow: 2px 2px 0px var(--black);
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .request-action-btn.accept {
@@ -1671,7 +1907,7 @@ const Dashboard = ({ dbUser }) => {
 
         .request-action-btn:hover {
           transform: translate(2px, 2px);
-          box-shadow: 1px 1px 0px var(--black);
+          box-shadow: 1px 1px 0px var(--border);
         }
 
         /* Active Chats List */
@@ -1681,7 +1917,7 @@ const Dashboard = ({ dbUser }) => {
           gap: 0.75rem;
           padding: 0.85rem 1.25rem;
           cursor: pointer;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           transition: background-color 0.1s ease;
         }
 
@@ -1705,7 +1941,7 @@ const Dashboard = ({ dbUser }) => {
           height: 10px;
           border-radius: 50%;
           background-color: var(--color);
-          border: 2.5px solid var(--black);
+          border: 2.5px solid var(--border);
           box-shadow: 0 0 0 1.5px var(--white);
         }
 
@@ -1756,9 +1992,9 @@ const Dashboard = ({ dbUser }) => {
           display: flex;
           flex-direction: column;
           background-color: var(--white);
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
-          box-shadow: 6px 6px 0px var(--black);
+          box-shadow: 6px 6px 0px var(--border);
           overflow: hidden;
         }
 
@@ -1841,7 +2077,7 @@ const Dashboard = ({ dbUser }) => {
           width: 380px;
           max-width: calc(100vw - 2rem);
           background-color: var(--white);
-          border: 4px solid var(--black);
+          border: 4px solid var(--border);
           border-radius: var(--border-radius);
           box-shadow: var(--shadow-md);
           z-index: 1000;
@@ -1908,7 +2144,7 @@ const Dashboard = ({ dbUser }) => {
           padding: 0.75rem 1.25rem;
           text-transform: uppercase;
           letter-spacing: 0.05em;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           text-align: left;
         }
 
@@ -1922,7 +2158,7 @@ const Dashboard = ({ dbUser }) => {
           justify-content: space-between;
           align-items: center;
           padding: 0.85rem 1.25rem;
-          border-bottom: 3px solid var(--black);
+          border-bottom: 3px solid var(--border);
           gap: 0.75rem;
         }
 
@@ -1936,7 +2172,7 @@ const Dashboard = ({ dbUser }) => {
           right: -5px;
           background-color: var(--color);
           color: var(--black);
-          border: 2px solid var(--black);
+          border: 2px solid var(--border);
           font-size: 0.65rem;
           font-weight: 900;
           border-radius: 50%;

@@ -20,6 +20,7 @@ function decodeClerkToken(token) {
 
 export const initSocket = (httpServer) => {
   io = new Server(httpServer, {
+    maxHttpBufferSize: 1e7, // 10MB for image transfers
     cors: {
       origin: '*',
       methods: ['GET', 'POST'],

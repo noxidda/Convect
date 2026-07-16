@@ -26,18 +26,20 @@
   --text-muted: var(--gray-dark);
   
   /* Contrast borders */
-  --border: var(--black);
+  --border: var(--border-color, var(--black));
+  --shadow-color: var(--border-shadow-color, var(--border));
   --border-width: 3px;
   --border-radius: 10px;
   
   /* Hard drop shadows */
-  --shadow-sm: 3px 3px 0px var(--black);
-  --shadow-md: 6px 6px 0px var(--black);
-  --shadow-lg: 10px 10px 0px var(--black);
+  --shadow-sm: 3px 3px 0px var(--shadow-color);
+  --shadow-md: 6px 6px 0px var(--shadow-color);
+  --shadow-lg: 10px 10px 0px var(--shadow-color);
 
   /* Header Height */
   --header-height: 80px;
 }
+
 
 * {
   box-sizing: border-box;
@@ -70,29 +72,29 @@ body {
 
 ::-webkit-scrollbar-track {
   background: var(--white);
-  border-left: var(--border-width) solid var(--black);
+  border-left: var(--border-width) solid var(--border);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--black);
-  border-left: 3px solid var(--black);
-  border-right: 3px solid var(--black);
+  background: var(--border);
+  border-left: 3px solid var(--border);
+  border-right: 3px solid var(--border);
   border-top: none;
   border-bottom: none;
   cursor: pointer;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--black);
-  border-left: 3px solid var(--black);
-  border-right: 3px solid var(--black);
+  background: var(--border);
+  border-left: 3px solid var(--border);
+  border-right: 3px solid var(--border);
   border-top: none;
   border-bottom: none;
   cursor: pointer;
 }
 
 ::selection {
-  background: var(--black);
+  background: var(--border);
   color: var(--color);
 }
 
@@ -107,7 +109,7 @@ button, input, textarea, select {
 
 input, textarea, select {
   background-color: var(--white);
-  border: var(--border-width) solid var(--black);
+  border: var(--border-width) solid var(--border);
   padding: 0.75rem 1rem;
   border-radius: var(--border-radius);
   color: var(--black);
@@ -145,7 +147,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--color);
   color: var(--black);
   padding: 0.75rem 1.5rem;
-  border: var(--border-width) solid var(--black);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--border-radius);
   font-weight: 900;
   text-align: center;
@@ -156,7 +158,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover:not(:disabled) {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px var(--black);
+  box-shadow: 1px 1px 0px var(--shadow-color);
   background-color: var(--color);
 }
 
@@ -181,7 +183,7 @@ h1, h2, h3, h4, h5, h6 {
   background-color: var(--black);
   color: var(--white);
   padding: 0.75rem 1.5rem;
-  border: var(--border-width) solid var(--black);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--border-radius);
   font-weight: 900;
   text-align: center;
@@ -192,7 +194,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-danger:hover:not(:disabled) {
   transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px var(--black);
+  box-shadow: 1px 1px 0px var(--shadow-color);
   background-color: var(--white);
   color: var(--black);
 }
@@ -228,7 +230,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .auth-card {
   background-color: var(--white);
-  border: var(--border-width) solid var(--black);
+  border: var(--border-width) solid var(--border);
   border-radius: var(--border-radius);
   padding: 2.5rem;
   width: 100%;

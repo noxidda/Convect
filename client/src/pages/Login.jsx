@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useSignIn } from '@clerk/clerk-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, AlertCircle, Loader2, MessageSquare, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, AlertCircle, Loader2, MessageSquare, KeyRound } from 'lucide-react';
 import signinImg from '../assets/signin.jpg';
 
 const Login = () => {
   const { isLoaded, signIn, setActive } = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [pendingMfa, setPendingMfa] = useState(false);
@@ -32,15 +32,21 @@ const Login = () => {
         navigate('/');
       } else if (result.status === 'needs_second_factor') {
         setPendingMfa(true);
-        // automatically prepare phone
-        const smsFactor = result.supportedSecondFactors.find(
-          (f) => f.strategy === 'phone_code'
+        // Prioritize TOTP (authenticator app) which doesn't need preparation.
+        // Only prepare SMS if TOTP is not set up on this account.
+        const hasTotp = result.supportedSecondFactors.some(
+          (f) => f.strategy === 'totp'
         );
-        if (smsFactor) {
-          try {
-            await signIn.prepareSecondFactor(smsFactor);
-          } catch (prepErr) {
-            console.error('Error preparing SMS factor:', prepErr);
+        if (!hasTotp) {
+          const smsFactor = result.supportedSecondFactors.find(
+            (f) => f.strategy === 'phone_code'
+          );
+          if (smsFactor) {
+            try {
+              await signIn.prepareSecondFactor(smsFactor);
+            } catch (prepErr) {
+              console.error('Error preparing SMS factor:', prepErr);
+            }
           }
         }
       } else {
@@ -62,8 +68,11 @@ const Login = () => {
     setError('');
 
     try {
+      // Prioritize TOTP (Authenticator App) over SMS verification code
       const factor = signIn.supportedSecondFactors.find(
-        (f) => f.strategy === 'totp' || f.strategy === 'phone_code'
+        (f) => f.strategy === 'totp'
+      ) || signIn.supportedSecondFactors.find(
+        (f) => f.strategy === 'phone_code'
       );
 
       if (!factor) {
@@ -133,34 +142,14 @@ const Login = () => {
                 <div className="input-icon-wrapper">
                   <input
                     id="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     disabled={loading}
-                    style={{ paddingRight: '46px !important' }}
                   />
                   <Lock size={18} className="input-icon" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="password-toggle-btn"
-                    style={{
-                      position: 'absolute',
-                      right: '14px',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: '#000000',
-                      padding: 0,
-                      zIndex: 3
-                    }}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
                 </div>
               </div>
 
@@ -298,14 +287,14 @@ const Login = () => {
           width: 100%;
           max-width: 420px;
           background-color: #FFFFFF;
-          border: 4px solid #000000;
+          border: 4px solid var(--border);
           border-radius: 10px;
           padding: 2.5rem;
           display: flex;
           flex-direction: column;
           gap: 1.5rem;
           margin: auto;
-          box-shadow: 8px 8px 0px #000000;
+          box-shadow: 8px 8px 0px var(--border);
           animation: fadeIn 0.3s ease-out;
         }
 
@@ -327,7 +316,7 @@ const Login = () => {
           height: 60px;
           color: #FFFFFF;
           margin-bottom: 0.25rem;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
         }
 
         .brand-name {
@@ -347,7 +336,7 @@ const Login = () => {
 
         .error-alert {
           background-color: #000000;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           border-radius: 10px;
           padding: 0.75rem 1rem;
           color: #FFFFFF;
@@ -356,7 +345,7 @@ const Login = () => {
           align-items: flex-start;
           gap: 0.5rem;
           line-height: 1.4;
-          box-shadow: 3px 3px 0px #000000;
+          box-shadow: 3px 3px 0px var(--border);
         }
 
         .error-icon {
@@ -402,20 +391,20 @@ const Login = () => {
         .input-icon-wrapper input {
           padding-left: 42px !important;
           background-color: #FFFFFF !important;
-          border: 3px solid #000000 !important;
+          border: 3px solid var(--border) !important;
           border-radius: 10px !important;
           color: #000000 !important;
           font-size: var(--text-sm);
           height: 48px;
-          box-shadow: 3px 3px 0px #000000 !important;
+          box-shadow: 3px 3px 0px var(--border) !important;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
         }
 
         .input-icon-wrapper input:focus {
           background-color: #FFFFFF !important;
-          border-color: #000000 !important;
+          border-color: var(--border) !important;
           transform: translate(-2px, -2px);
-          box-shadow: 5px 5px 0px #000000 !important;
+          box-shadow: 5px 5px 0px var(--border) !important;
         }
 
         .input-icon-wrapper input:focus ~ .input-icon {
@@ -430,19 +419,19 @@ const Login = () => {
           background-color: #FFFFFF;
           color: #000000;
           font-weight: 900;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           border-radius: 10px;
           height: 48px;
           font-size: var(--text-sm);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          box-shadow: 4px 4px 0px #000000;
+          box-shadow: 4px 4px 0px var(--border);
           text-transform: uppercase;
         }
 
         .submit-btn:hover:not(:disabled) {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px #000000;
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .submit-btn:active:not(:disabled) {
@@ -463,20 +452,20 @@ const Login = () => {
           align-items: center;
           background-color: #FFFFFF;
           color: #000000;
-          border: 3px solid #000000;
+          border: 3px solid var(--border);
           font-weight: 900;
           border-radius: 10px;
           height: 48px;
           font-size: var(--text-sm);
           cursor: pointer;
           transition: transform 0.1s ease, box-shadow 0.1s ease;
-          box-shadow: 3px 3px 0px #000000;
+          box-shadow: 3px 3px 0px var(--border);
           text-transform: uppercase;
         }
 
         .back-btn:hover:not(:disabled) {
           transform: translate(2px, 2px);
-          box-shadow: 2px 2px 0px #000000;
+          box-shadow: 2px 2px 0px var(--border);
         }
 
         .back-btn:disabled {

@@ -267,7 +267,7 @@ router.get('/:id/messages', requireAuth, async (req, res) => {
 // 5. send message
 router.post('/:id/messages', requireAuth, async (req, res) => {
   const conversationId = req.params.id;
-  const { content } = req.body;
+  const { content, messageType, imageQuality, fileName, fileSize } = req.body;
 
   try {
     const currentUser = await User.findOne({ clerkId: req.auth.userId });
@@ -304,7 +304,11 @@ router.post('/:id/messages', requireAuth, async (req, res) => {
     const message = new Message({
       conversationId,
       sender: currentUserId,
-      content: content.trim(),
+      content: content,
+      messageType: messageType || 'text',
+      imageQuality: imageQuality || null,
+      fileName: fileName || null,
+      fileSize: fileSize || null,
     });
     await message.save();
 

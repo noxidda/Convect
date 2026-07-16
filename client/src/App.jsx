@@ -107,18 +107,18 @@ const AppContent = () => {
         alignItems: 'center',
         height: '100vh',
         backgroundColor: 'var(--bg-app)',
-        color: 'var(--text-primary)',
+        color: '#000000',
         gap: '10px'
       }}>
         <div style={{
           width: '40px',
           height: '40px',
-          border: '4px solid var(--border)',
+          border: '4px solid #000000',
           borderTop: '4px solid var(--accent)',
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-        <p style={{ fontWeight: 500 }}>Connecting to Convect...</p>
+        <p style={{ fontWeight: 600 }}>Connecting to Convect...</p>
         <style>{`
           @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -212,17 +212,31 @@ const AppContent = () => {
   );
 };
 
+const COLOR_MAP = {
+  '#FFC5C5': '#1E0808', // Red (extremely dark)
+  '#FFC6FF': '#1E081E', // Pink (extremely dark)
+  '#CAEAFF': '#081420', // Blue (extremely dark)
+  '#FDFFB6': '#1A1905', // Yellow (extremely dark)
+  '#CAFFBF': '#081C08', // Green (extremely dark)
+  '#D6C9FF': '#120820', // Purple (extremely dark)
+  '#C1D3FF': '#080F24'  // Indigo (extremely dark)
+};
+
 const App = () => {
   // global theme initialization
   useEffect(() => {
-    // remove the data-theme
-    document.documentElement.removeAttribute('data-theme');
+    // Set theme to light
+    document.documentElement.setAttribute('data-theme', 'light');
     
-    // load and set
-    const savedColor = localStorage.getItem('convect-theme-color');
-    if (savedColor) {
-      document.documentElement.style.setProperty('--color', savedColor);
-    }
+    // load and set color
+    const savedColor = localStorage.getItem('convect-theme-color') || '#D6C9FF';
+    document.documentElement.style.setProperty('--color', savedColor);
+    
+    // load and set border color and shadow color
+    const resolvedBorderColor = COLOR_MAP[savedColor] || savedColor;
+    const resolvedShadowColor = COLOR_MAP[savedColor] || savedColor;
+    document.documentElement.style.setProperty('--border-color', resolvedBorderColor);
+    document.documentElement.style.setProperty('--border-shadow-color', resolvedShadowColor);
   }, []);
 
   // if clerk publishable
@@ -277,9 +291,9 @@ const App = () => {
 
   return (
     <ClerkProvider publishableKey={clerkPubKey}>
-      <BrowserRouter>
+      <HashRouter>
         <AppContent />
-      </BrowserRouter>
+      </HashRouter>
       <style>{`
         .auth-container, .auth-wrapper {
           height: 100vh;
@@ -295,9 +309,9 @@ const App = () => {
         
         .cl-card {
           background-color: #FFFFFF !important;
-          border: 4px solid #000000 !important;
+          border: 4px solid var(--border) !important;
           border-radius: 4px !important;
-          box-shadow: 8px 8px 0px #000000 !important;
+          box-shadow: 8px 8px 0px var(--border) !important;
           width: 100% !important;
           max-width: 400px !important;
           padding: 2.5rem !important;
@@ -329,19 +343,19 @@ const App = () => {
 
         .cl-formFieldInput {
           background-color: #FFFFFF !important;
-          border: 3px solid #000000 !important;
+          border: 3px solid var(--border) !important;
           border-radius: 4px !important;
           color: #000000 !important;
           padding: 0.75rem 1rem !important;
           font-size: var(--text-sm) !important;
           outline: none !important;
-          box-shadow: 3px 3px 0px #000000 !important;
+          box-shadow: 3px 3px 0px var(--border) !important;
         }
 
         .cl-formFieldInput:focus {
           background-color: #D6C9FF !important;
-          border-color: #000000 !important;
-          box-shadow: 5px 5px 0px #000000 !important;
+          border-color: var(--border) !important;
+          box-shadow: 5px 5px 0px var(--border) !important;
         }
 
         .cl-formButtonPrimary {
@@ -351,20 +365,20 @@ const App = () => {
           border-radius: 4px !important;
           padding: 0.75rem 1.5rem !important;
           transition: transform 0.1s ease, box-shadow 0.1s ease !important;
-          border: 3px solid #000000 !important;
-          box-shadow: 4px 4px 0px #000000 !important;
+          border: 3px solid var(--border) !important;
+          box-shadow: 4px 4px 0px var(--border) !important;
           text-transform: uppercase !important;
         }
 
         .cl-formButtonPrimary:hover {
           background-color: #D6C9FF !important;
           transform: translate(-2px, -2px) !important;
-          box-shadow: 6px 6px 0px #000000 !important;
+          box-shadow: 6px 6px 0px var(--border) !important;
         }
 
         .cl-formButtonPrimary:active {
           transform: translate(1px, 1px) !important;
-          box-shadow: 1px 1px 0px #000000 !important;
+          box-shadow: 1px 1px 0px var(--border) !important;
         }
 
         .cl-footerActionText {
@@ -387,17 +401,17 @@ const App = () => {
         }
 
         .cl-socialButtonsBlockButton {
-          border: 3px solid #000000 !important;
+          border: 3px solid var(--border) !important;
           background-color: #FFFFFF !important;
           color: #000000 !important;
           border-radius: 4px !important;
-          box-shadow: 3px 3px 0px #000000 !important;
+          box-shadow: 3px 3px 0px var(--border) !important;
           transition: transform 0.1s ease, box-shadow 0.1s ease !important;
         }
 
         .cl-socialButtonsBlockButton:hover {
           transform: translate(-2px, -2px) !important;
-          box-shadow: 5px 5px 0px #000000 !important;
+          box-shadow: 5px 5px 0px var(--border) !important;
           background-color: #D6C9FF !important;
         }
 
@@ -415,7 +429,7 @@ const App = () => {
         }
 
         .cl-dividerLine {
-          background-color: #000000 !important;
+          background-color: var(--border) !important;
           height: 3px !important;
         }
 
